@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Création de Statistiques</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+
+.info-section {
+            background-color: #003366; /* bleu police */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+.equipage-section {
+            background-color: #f0f8ff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+.intervention-section {
+            background-color: #003366; /* bleu police */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+.recap-section {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 5px;
+            height: calc(100vh - 200px); /* Ajustez la valeur selon la hauteur de l'en-tête et d'autres sections */
+            overflow-y: auto;
+        }
+.equipage-card {
+            background-color: rgb(93, 187, 187);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+
+.infraction-suggestions {
+    position: absolute;
+    top: 100%; /* Position juste en dessous du champ input */
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    width: 100%;
+    margin-top: -1px; /* Pour coller au champ input */
+}
+
+.infraction-suggestion {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #7ab5ec;
+    color: rgb(9, 15, 77);
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.infraction-suggestion:hover {
+    background-color: #6cddc8;
+}
+
+.infraction-suggestion.selected {
+    background-color: #003366;
+    color: rgb(18, 192, 70);
+}
+
+.address-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    width: 100%;
+    margin-top: 0;
+}
+
+.address-suggestion {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    background-color: #7ab5ec;
+    color: rgb(9, 15, 77);
+}
+
+.address-suggestion:hover {
+    background-color: #6cddc8;
+}
+
+.address-suggestion.selected {
+    background-color: #003366;
+    color: rgb(18, 192, 70);
+}
+        
+        .address-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .address-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-top: none;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+    }
+
+    .address-suggestion {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+    }
+
+    .address-suggestion:hover {
+        background-color: #f0f8ff;
+    }
+
+    .address-suggestion.selected {
+        background-color: #003366;
+        color: white;
+    }
+
+    .recap-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .table-container {
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+
+    .validation-button-container {
+        position: sticky;
+        bottom: 0;
+        padding: 10px;
+        background-color: #003366;
+        text-align: center;
+        border-top: 2px solid #add8e6;
+    }
+
+    .recap-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .table-container {
+        flex-grow: 1;
+        min-height: 100px; /* Hauteur minimale pour assurer l'espace pour le tableau */
+    }
+
+    .validation-button-container {
+        padding: 10px;
+        background-color: #003366;
+        text-align: center;
+        border-top: 2px solid #add8e6;
+    }
+
+    /* Nouveau style pour le conteneur du tableau */
+    .table-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 200px;
+        background-color: #003366;
+    }
+
+    .table-container {
+        flex: 1;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+
+    .button-container {
+        padding: 15px;
+        background-color: #003366;
+        text-align: center;
+        border-top: 2px solid #add8e6;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+</style>
+
+
+
+<!-- 3. Ajouter dans la section <script> existante, juste après document.addEventListener('DOMContentLoaded', function() { -->
+<script>
+let addresses = []; // Déclarer au niveau global
+let addressesLoaded = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuration de l'autocomplétion d'adresse
+    const addressInput = document.getElementById('lieuIntervention');
+    const suggestionsList = document.createElement('div');
+    suggestionsList.id = 'addressSuggestions';
+    suggestionsList.className = 'address-suggestions';
+    
+    // Create a container div for the address input and suggestions
+    const addressContainer = document.createElement('div');
+    addressContainer.className = 'address-container';
+    addressContainer.style.position = 'relative';
+    
+    // Replace the input with the container and move the input inside it
+    addressInput.parentNode.insertBefore(addressContainer, addressInput);
+    addressContainer.appendChild(addressInput);
+    
+    // Append suggestions list to the container
+    addressContainer.appendChild(suggestionsList);
+    let currentFocus = -1;
+
+    // Get user info including brigade
+    fetch('/api/user-info')
+        .then(response => response.json())
+        .then(userInfo => {
+            const userBrigade = userInfo.brigade;
+            const brigadeSelect = document.getElementById('brigade');
+
+            // Load brigades and set user's brigade
+            fetch('/api/brigades')
+                .then(response => response.json())
+                .then(brigades => {
+                    // Clear existing options
+                    while (brigadeSelect.firstChild) {
+                        brigadeSelect.removeChild(brigadeSelect.firstChild);
+                    }
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Sélectionnez une brigade';
+                    brigadeSelect.appendChild(defaultOption);
+                    
+                    // Add brigade options
+                    brigades.forEach(brigade => {
+                        const option = document.createElement('option');
+                        option.value = brigade.nomBrigade;
+                        option.textContent = brigade.nomBrigade;
+                        if (userBrigade && brigade.nomBrigade === userBrigade) {
+                            option.selected = true;
+                            brigadeSelect.disabled = true; // Disable the select element when a brigade is provided
+                        }
+                        brigadeSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading brigades:', error));
+        })
+        .catch(error => console.error('Error loading user info:', error));
+
+    // Charger les adresses depuis l'API
+    function loadAddresses() {
+        if (addressesLoaded) return;
+
+        fetch('/api/adresses')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau');
+                }
+                return response.json();
+            })
+            .then(data => {
+                addresses = data;
+                addressesLoaded = true;
+                console.log('Liste complète des adresses chargées:', addresses); // Ajout de ce log
+                console.log('Nombre total d\'adresses:', addresses.length);
+                filterAddresses(addressInput.value.toLowerCase());
+            })
+            .catch(error => {
+        console.error('Erreur:', error);
+        
+        // Supprimer le message de chargement s'il existe encore
+        if (loadingMessage) loadingMessage.remove();
+        
+        // Afficher un message d'erreur
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger';
+        errorMessage.textContent = 'Erreur lors de la validation des interventions: ' + error.message;
+        document.querySelector('.recap-section').prepend(errorMessage);
+        
+        // Supprimer le message après 5 secondes
+        setTimeout(() => errorMessage.remove(), 5000);
+    });
+}
+
+// Fonction pour extraire les informations des agents à partir du nom de l'équipage
+function getAgentsFromEquipage(equipageName) {
+    // Trouver la carte d'équipage correspondante
+    const equipageCards = document.querySelectorAll('.equipage-card');
+    let agents = [];
+    
+    for (const card of equipageCards) {
+        const cardTitle = card.querySelector('h4').textContent.trim();
+        if (cardTitle === equipageName) {
+            // Récupérer tous les noms d'agents dans cet équipage
+            const agentDivs = card.querySelectorAll('div > div');
+            agentDivs.forEach(div => {
+                const agentName = div.textContent.replace(' - ', '').trim();
+                if (agentName) {
+                    // Extraire l'ID après le dernier tiret
+                    const match = agentName.match(/- (\d+)\s*$/);
+                    const matricule = match ? match[1] : null;
+
+                    agents.push({
+                        matricule: matricule
+                    });
+                }
+            });
+            break;
+        }
+    }
+    
+    return agents;
+    }
+
+    // Fonction pour filtrer et afficher les adresses
+    function filterAddresses(val) {
+        suggestionsList.innerHTML = '';
+
+        if (!val) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
+
+        const matchingAddresses = addresses.filter(address =>
+            address.nomadresse.toLowerCase().includes(val.toLowerCase())
+        ).slice(0, 5); // Limiter à 5 suggestions
+
+        if (matchingAddresses.length > 0) {
+            suggestionsList.style.display = 'block';
+            matchingAddresses.forEach((address, index) => {
+                const div = document.createElement('div');
+                div.innerHTML = address.nomadresse;
+                div.className = 'address-suggestion';
+                div.setAttribute('data-index', index);
+                div.setAttribute('data-id', address.idadresse);
+
+                div.addEventListener('click', function() {
+                    addressInput.value = address.nomadresse;
+                    document.getElementById('lieuIdIntervention').value = address.idadresse;
+                    suggestionsList.style.display = 'none';
+                    currentFocus = -1;
+                });
+
+                suggestionsList.appendChild(div);
+            });
+        } else {
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    // Charger les adresses uniquement lors du focus sur le champ
+    addressInput.addEventListener('focus', function() {
+        if (!addressesLoaded) {
+            loadAddresses();
+        }
+    });
+
+    // Gestionnaire d'événement pour la saisie
+    addressInput.addEventListener('input', function() {
+        filterAddresses(this.value.toLowerCase());
+    });
+
+    // Gestionnaire d'événement pour la touche "Entrée"
+    addressInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Empêcher la soumission du formulaire
+
+            if (currentFocus > -1) {
+                const suggestions = suggestionsList.getElementsByClassName('address-suggestion');
+                if (suggestions.length > 0 && suggestions[currentFocus]) {
+                    addressInput.value = suggestions[currentFocus].textContent;
+                    suggestionsList.style.display = 'none';
+                    currentFocus = -1;
+                }
+            } else {
+                // Si aucune suggestion n'est sélectionnée, masquer la liste
+                suggestionsList.style.display = 'none';
+            }
+        }
+    });
+
+    // ...existing code pour la navigation au clavier...
+});
+
+// Fonction pour charger les types d'interventions
+function loadTypeInterventions() {
+    fetch('/api/types-interventions')
+        .then(response => response.json())
+        .then(interventions => {
+            const select = document.getElementById('typeIntervention');
+            select.innerHTML = '<option value="">Sélectionnez un type d\'intervention</option>';
+            // Trier les interventions par ordre alphabétique
+            interventions.sort((a, b) => {
+    // Prioriser CODE DE LA ROUTE et MAD
+    const priority = {'CODE DE LA ROUTE': 1, 'MAD': 2};
+    const aPriority = priority[a.nomInterventions] || 3;
+    const bPriority = priority[b.nomInterventions] || 3;
+    return aPriority - bPriority || a.nomInterventions.localeCompare(b.nomInterventions);
+});
+            interventions.forEach(intervention => {
+                const option = document.createElement('option');
+                option.value = [intervention.idInterventions, intervention.nomInterventions];
+                if (intervention.nomInterventions === 'MAD' || intervention.nomInterventions === 'CODE DE LA ROUTE') {
+                    option.style.color = 'rgb(146, 27, 27)';
+                    option.style.fontWeight = 'bold';
+                }
+option.textContent = intervention.nomInterventions;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Erreur:', error));
+}
+
+function validerToutesInterventions() {
+    const tbody = document.getElementById('recapInterventions');
+    const interventions = tbody.getElementsByTagName('tr');
+    
+    if (interventions.length === 0) {
+        alert("Aucune intervention à valider.");
+        return;
+    }
+
+    const dateCreation = document.getElementById('dateCreation').value;
+    if (!dateCreation) {
+        alert("Veuillez sélectionner une date.");
+        return;
+    }
+
+    // Récupérer toutes les données des interventions
+    const interventionsData = Array.from(interventions).map(row => {
+        const cells = row.getElementsByTagName('td');
+        const lieu = cells[3].textContent;
+        return {
+            equipage: cells[0].textContent,
+            idInterventions: cells[4].textContent,
+            typeIntervention: cells[7].textContent,
+            nombre: parseInt(cells[2].textContent),
+            lieu: lieu,
+            idAdresse: cells[5].textContent,
+            idInfractionOrMad: cells[6].textContent
+        };
+    });
+
+    let allAgents = [];
+    interventionsData.forEach(intervention => {
+        const equipageAgents = getAgentsFromEquipage(intervention.equipage);
+        equipageAgents.forEach(agent => {
+            if (!allAgents.some(a => a.matricule === agent.matricule)) {
+                allAgents.push(agent);
+            }
+        });
+    });
+    
+    // Créer un tableau d'interventions DTO
+    const interventionsDTO = interventionsData.map(intervention => {
+        const interventionDTO = {
+            dateIntervention: dateCreation,
+            idIntervention: intervention.idInterventions,
+            nomInterventions: intervention.typeIntervention,
+            nombreIntervention: intervention.nombre,
+            idAdresse: intervention.idAdresse,
+            idInfraction: null,
+            idMad: null,
+            lieu: intervention.lieu,
+            agents: allAgents,
+            brigade: document.getElementById('brigade').value
+        };
+
+        // Définir idMad ou idInfraction en fonction du type d'intervention
+        if (intervention.typeIntervention === 'MAD' && intervention.idInfractionOrMad) {
+            interventionDTO.idMad = intervention.idInfractionOrMad;
+        } else if (intervention.typeIntervention === 'CODE DE LA ROUTE' && intervention.idInfractionOrMad) {
+            interventionDTO.idInfraction = intervention.idInfractionOrMad;
+        }
+
+        return interventionDTO;
+    });
+    
+    // Afficher un message de chargement
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'alert alert-info';
+    loadingMessage.textContent = 'Validation des interventions en cours...';
+    document.querySelector('.recap-section').prepend(loadingMessage);
+
+    // Envoyer toutes les interventions au serveur
+    fetch(`/api/valider-interventions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(interventionsDTO)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Supprimer le message de chargement
+        loadingMessage.remove();
+        
+        if (data.success) {
+            // Afficher un message de succès
+            const successMessage = document.createElement('div');
+            successMessage.className = 'alert alert-success';
+            successMessage.textContent = data.message;
+            document.querySelector('.recap-section').prepend(successMessage);
+            
+            // Vider le tableau après validation
+            tbody.innerHTML = '';
+            
+            // Supprimer le message après 3 secondes
+            setTimeout(() => successMessage.remove(), 3000);
+        } else {
+            // Afficher un message d'erreur
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'alert alert-danger';
+            errorMessage.textContent = data.message || 'Erreur lors de la validation des interventions';
+            document.querySelector('.recap-section').prepend(errorMessage);
+            
+            // Supprimer le message après 5 secondes
+            setTimeout(() => errorMessage.remove(), 5000);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        
+        // Supprimer le message de chargement s'il existe encore
+        if (loadingMessage) loadingMessage.remove();
+        
+        // Afficher un message d'erreur
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger';
+        errorMessage.textContent = 'Erreur lors de la validation des interventions: ' + error.message;
+        document.querySelector('.recap-section').prepend(errorMessage);
+        
+        // Supprimer le message après 5 secondes
+        setTimeout(() => errorMessage.remove(), 5000);
+    });
+}
+
+// Fonction pour extraire les informations des agents à partir du nom de l'équipage
+function getAgentsFromEquipage(equipageName) {
+    // Trouver la carte d'équipage correspondante
+    const equipageCards = document.querySelectorAll('.equipage-card');
+    let agents = [];
+    
+    for (const card of equipageCards) {
+        const cardTitle = card.querySelector('h4').textContent.trim();
+        if (cardTitle === equipageName) {
+            // Récupérer tous les noms d'agents dans cet équipage
+            const agentDivs = card.querySelectorAll('div > div');
+            agentDivs.forEach(div => {
+                const agentName = div.textContent.replace(' - ', '').trim();
+                if (agentName) {
+                    // Extraire l'ID après le dernier tiret
+                    const match = agentName.match(/- (\d+)\s*$/);
+                    const matricule = match ? match[1] : null;
+
+                    agents.push({
+                        matricule: matricule
+                    });
+                }
+            });
+            break;
+        }
+    }
+    
+    return agents;
+}
+
+// Modifier la fonction supprimerIntervention
+function supprimerIntervention(row) {
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette intervention ?")) {
+        row.remove();
+    }
+}
+
+// Appeler la fonction au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+});
+</script>
+    </style>
+</head>
+<body style="background: linear-gradient(to bottom, #add8e6, #003366);">
+    <div class="container mt-4">
+        <!-- Section Information -->
+        <div class="info-section">
+            <h3 style="color: white;">Informations</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="brigade" class="form-label" style="color: white;">Brigade</label>
+                        <select class="form-select" id="brigade" required>
+                            <option value="">Sélectionnez une brigade</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="dateCreation" class="form-label" style="color: white;">Date de création</label>
+                        <input type="date" class="form-control" id="dateCreation" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Équipages -->
+        <div class="equipage-section">
+            <h3><button style="background-color:  #003366;" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#creerEquipageModal">
+                Créer un équipage
+            </button></h3>
+            
+            
+            <!-- Liste des équipages -->
+            <div id="listeEquipages" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: left;"></div>
+        </div>
+
+        <!-- Section Interventions -->
+        <div class="intervention-section">
+            <h3 style="margin-block-end: 20px;color: white;">SAISIE DES INTERVENTIONS ET DES INFRACTIONS</h3>
+            <div class="mb-3">
+                <div id="avertissementEquipage" class="alert alert-warning mt-2" style="display: none;font-weight: bold;">
+    ⚠️ Veuillez créer un équipage avant de sélectionner le type d'intervention ⚠️ 
+</div>
+<select class="form-select" id="typeIntervention" required style="background-color: rgb(93, 187, 187); font-weight: bold;">
+                    <option value="">Sélectionnez un type d'intervention</option>
+                </select>
+            </div>
+            <div class="mb-3" id="infractionInputDiv" style="display: none; position: relative;">
+                <label for="infractionInput" class="form-label" style="color: white;">Sélectionnez ou entrez une Infraction</label>
+                <input type="text" class="form-control" id="infractionInput" placeholder="Entrez NATINF ou une infraction " autocomplete="off">
+                <input type="text" id="infractionId" style="display: none; ">
+                <div id="infractionSuggestions" class="infraction-suggestions"></div>
+            </div>
+
+            <div id="interventionDetails" style="display: none; margin-top: 20px;">
+                <div class="mb-3">
+                    <label for="equipageSelect" class="form-label" style="color: white;">Sélectionnez un équipage</label>
+                    <select class="form-select" id="equipageSelect">
+                        <option value="">Sélectionnez un équipage</option>
+                        <!-- Options des équipages à ajouter dynamiquement -->
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="lieuIntervention" class="form-label" style="color: white;">Adresse de l'intervention</label>
+                    <input type="text" class="form-control" id="lieuIntervention" placeholder="Entrez l'adresse" autocomplete="off" required>
+                    <input type="hidden" id="lieuIdIntervention" name="lieuIdIntervention">
+                </div>
+                <div class="mb-3">
+                    <label for="nombreInterventions" class="form-label" style="color: white;">Nombre d'interventions</label>
+                    <input type="number" class="form-control" id="nombreInterventions" placeholder="Entrez le nombre" required min="1" value="1">
+                </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button type="button" class="btn btn-success" onclick="validerIntervention()">Valider</button>
+                </div>
+            </div>
+
+        <!-- Section Récapitulatif -->
+        <div class="recap-section">
+            <h3 style="margin-block-end: 20px;background-color: #003366; color: white;">RECAPITULATIF DES INTERVENTIONS</h3>
+            <div class="table-wrapper">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr style="color: white;">
+                                <th>Equipage</th>
+                                <th>Type d'intervention</th>
+                                <th>Nombre</th>
+                                <th>Lieu</th>
+                                <th>TypeId</th>
+                                <th>LieuId</th>
+                                <th>InfractionId/MadId</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recapInterventions">
+                            <!-- Récapitulatif des interventions -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="button-container">
+                    <button type="button" class="btn btn-success btn-lg" onclick="validerToutesInterventions()">
+                        Valider toutes les interventions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Créer Équipage -->
+    <div class="modal fade" id="creerEquipageModal" tabindex="-1" style="background: linear-gradient(to bottom, #003366, #add8e6);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Créer un équipage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="card-body">
+                            <h5 class="card-title">Équipage <span class="equipage-number"></span></h5>
+                            <div class="mb-3">
+                                <label class="form-label">Agents</label>
+                                <select class="form-select mb-2 agent-select" required></select>
+                                <select class="form-select mb-2 agent-select" required></select>
+                                <select class="form-select mb-2 agent-select" required></select>
+                                <select class="form-select mb-2 agent-select" required></select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" onclick="sauvegarderEquipage(event)">Sauvegarder</button>
+                </div> 
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Ajouter la référence au fichier JS externe -->
+    <script src="/js/equipage.js"></script>
+    <script>
+        // Garder uniquement le code spécifique à la page qui n'est pas dans equipage.js
+        window.equipages = [];
+        
+        function loadInitialData() {
+            // Charger l'imatricul de l'agent connecté
+            fetch('/api/user-info')
+            .then(response => response.json())
+            .then(userInfo => {
+                const connectedAgentId = userInfo.matricule;
+                console.log('🔍 Informations de l\'agent connecté:', userInfo);
+                console.log('👤 Matricule de l\'agent connecté:', connectedAgentId);
+            })
+            .catch(error => console.error('Erreur chargement agents:', error));
+
+
+            // Charger la brigade de l'agent connecté
+            fetch('/api/agent-brigade')
+                .then(response => response.json())
+                .then(agentBrigade => {
+                    console.log('Brigade de l\'utilisateur:', agentBrigade);
+                    // Charger toutes les brigades
+                    return fetch('/api/brigades').then(response => response.json()).then(brigades => {
+                        const select = document.getElementById('brigade');
+                        brigades.forEach(brigade => {
+                            const option = document.createElement('option');
+                            option.value = brigade;
+                            option.textContent = brigade;
+                            select.appendChild(option);
+                            // Sélectionner la brigade de l'agent connecté
+                            if (brigade === agentBrigade) {
+                                option.selected = true;
+                            }
+                        });
+                    });
+                });
+            
+            // Charger les agents et présélectionner l'utilisateur connecté dans le premier select
+            // D'abord, récupérer les informations de l'utilisateur connecté
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(userInfo => {
+                    const userMatricule = userInfo.matricule;
+                    window.connectedAgentId = userMatricule; // Stocker l'ID de l'agent connecté globalement
+                    
+                    // Ensuite, charger tous les agents
+                    return fetch('/api/agents')
+                        .then(response => response.json())
+                        .then(agents => {
+                            const selects = document.querySelectorAll('.agent-select');
+                            
+                            // Pour chaque select d'agent
+                            selects.forEach((select, index) => {
+                                select.innerHTML = '<option value="">Sélectionnez un agent</option>';
+                                let userAgentValue = null;
+                                
+                                // Ajouter tous les agents comme options
+                                agents.forEach(agent => {
+                                    const option = document.createElement('option');
+                                    option.value = agent;
+                                    option.textContent = agent;
+                                    
+                                    // Si c'est le premier select et que l'agent correspond à l'utilisateur connecté
+                                    // (en vérifiant si l'agent contient le matricule de l'utilisateur)
+                                    if (index === 0 && (agent.split('-').pop()?.trim() ?? '').includes(userMatricule)) {
+                                        userAgentValue = agent;
+                                    }
+                                    
+                                    select.appendChild(option);
+                                });
+                                
+                                // Définir la valeur du select directement après avoir ajouté toutes les options
+                                if (index === 0 && userAgentValue) {
+                                    select.value = userAgentValue;
+                                }
+                                
+                                // Déclencher l'événement change pour mettre à jour les autres selects
+                                if (index === 0) {
+                                    select.dispatchEvent(new Event('change'));
+                                }
+                            });
+
+                            // Ajouter un gestionnaire d'événements pour la modal
+                            const creerEquipageModal = document.getElementById('creerEquipageModal');
+                            creerEquipageModal.addEventListener('show.bs.modal', function() {
+                                const firstSelect = this.querySelector('.agent-select');
+                                if (firstSelect) {
+                                    const options = firstSelect.options;
+                                    for (let i = 0; i < options.length; i++) {
+                                        if (options[i].value.includes(window.connectedAgentId)) {
+                                            firstSelect.value = options[i].value;
+                                            firstSelect.dispatchEvent(new Event('change'));
+                                            break;
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                })
+                .catch(error => console.error('Erreur lors du chargement des informations utilisateur:', error));
+            
+            // Charger les types d'interventions
+            loadTypeInterventions();
+        }
+
+        let equipageCounter = 1; // Compteur pour les équipages
+        let equipagesExistants = []; // Tableau pour stocker les noms d'équipages existants
+
+        // Sauvegarder un équipage
+        function sauvegarderEquipage(event) {
+            console.log("Fonction sauvegarderEquipage appelée");
+            event.preventDefault();
+            const modal = event.target.closest('.modal');
+            const form = modal.querySelector('form');
+
+            if (!form) {
+                console.error("Formulaire non trouvé");
+                return;
+            }
+
+            const agents = Array.from(form.querySelectorAll('.agent-select'))
+                .map(select => select.value)
+                .filter(value => value); // Filtrer les valeurs vides
+
+            console.log("Agents sélectionnés :", agents);
+
+            if (agents.length === 0) {
+                alert('Veuillez sélectionner au moins un agent');
+                return;
+            }
+
+            // Afficher les agents dans la section Équipage
+            const equipageSection = document.getElementById('listeEquipages');
+            const equipageDiv = document.createElement('div');
+            equipageDiv.className = 'equipage-card';
+            equipageDiv.style.height = '250px'; // Hauteur fixe pour correspondre à quatre noms d'agents
+
+            let equipageId;
+            let compteur = 1;
+            do {
+                equipageId = `Équipage ${compteur}`;
+                compteur++;
+            } while (equipagesExistants.includes(equipageId)); // Vérifier si l'équipage existe déjà
+
+            equipagesExistants.push(equipageId); // Ajouter le nouvel équipage au tableau
+
+            const titreEquipage = document.createElement('h4');
+            titreEquipage.textContent = equipageId;
+            titreEquipage.style.marginBlockEnd= '15px'; 
+            equipageDiv.appendChild(titreEquipage);
+
+            const agentsDiv = document.createElement('div');
+            agentsDiv.style.display = 'flex';
+            agentsDiv.style.flexDirection = 'column'; // Aligner les agents en colonne
+            agentsDiv.style.gap = '10px';
+            agentsDiv.style.marginLeft = '20px'; // Ajouter une marge en gauche du conteneur des agents
+
+            agents.forEach(agent => {
+                const agentDiv = document.createElement('div');
+                agentDiv.textContent = " - "+agent; // Afficher le nom de l'agent
+                agentsDiv.appendChild(agentDiv);
+            });
+            equipageDiv.appendChild(agentsDiv);
+
+            // Créer les boutons Modifier et Supprimer
+            const actionButtonsDiv = document.createElement('div');
+            actionButtonsDiv.style.position = 'absolute'; // Positionner les boutons de manière absolue
+            actionButtonsDiv.style.bottom = '10px'; // Positionner en bas de l'encadrement
+            actionButtonsDiv.style.display = 'flex';
+            actionButtonsDiv.style.justifyContent = 'flex-start';
+
+            
+            supprimerButton.onclick = function() {
+                console.log(`Tentative de suppression de : ${equipageId}`);
+                supprimerEquipage(equipageId);
+                equipagesExistants = equipagesExistants.filter(e => e !== equipageId);
+            };
+
+            actionButtonsDiv.appendChild(supprimerButton);
+
+            equipageDiv.appendChild(actionButtonsDiv);
+            equipageSection.appendChild(equipageDiv);
+            equipageCounter++; // Incrémenter le compteur d'équipages
+
+            // Appeler une seule fois après avoir ajouté l'équipage
+            updateTypeInterventionSelect();
+            handleTypeInterventionSelection();
+
+            // Fermer la modal
+            bootstrap.Modal.getInstance(modal).hide();
+        }
+
+        // Fonction pour gérer la sélection du type d'intervention
+        function handleTypeInterventionSelection() {
+            const typeInterventionSelect = document.getElementById('typeIntervention');
+            const interventionDetails = document.getElementById('interventionDetails');
+            const infractionInputDiv = document.getElementById('infractionInputDiv');
+            const listeEquipages = document.getElementById('listeEquipages');
+            
+            if (typeInterventionSelect.value) {
+                // Afficher la section des détails d'intervention
+                interventionDetails.style.display = 'block';
+                
+                // Mettre à jour la liste des équipages dans le menu déroulant
+                const equipageSelect = document.getElementById('equipageSelect');
+                equipageSelect.innerHTML = '<option value="">Sélectionnez un équipage</option>';
+                
+                // Récupérer tous les équipages créés
+                const equipageCards = listeEquipages.getElementsByClassName('equipage-card');
+                
+                // Pour chaque équipage, ajouter une option dans le menu déroulant avec son vrai nom
+                Array.from(equipageCards).forEach((card) => {
+                    const equipageNom = card.querySelector('h4').textContent.trim();
+                    const option = document.createElement('option');
+                    option.value = equipageNom;
+                    option.textContent = equipageNom;
+                    equipageSelect.appendChild(option);
+                });
+                
+                // Sélectionner le premier équipage par défaut s'il existe
+                if (equipageSelect.options.length > 1) {
+                    equipageSelect.selectedIndex = 1;
+                }
+
+                // Gérer l'affichage du champ infraction
+                if (typeInterventionSelect.value === 'MAD' || typeInterventionSelect.value === 'CODE DE LA ROUTE') {
+                    infractionInputDiv.style.display = 'block';
+                    loadInfractions(typeInterventionSelect.value);
+                } else {
+                    infractionInputDiv.style.display = 'none';
+                }
+            } else {
+                interventionDetails.style.display = 'none';
+                infractionInputDiv.style.display = 'none';
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser le datepicker
+            const dateInput = document.getElementById('dateCreation');
+            dateInput.valueAsDate = new Date();
+            
+            // Charger les données initiales
+            loadInitialData();
+
+            const agentSelects = document.querySelectorAll('.agent-select');
+
+            agentSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    const selectedValues = Array.from(agentSelects).map(s => s.value);
+                    agentSelects.forEach(s => {
+                        const options = s.querySelectorAll('option');
+                        options.forEach(option => {
+                            if (selectedValues.includes(option.value) && option.value !== s.value) {
+                                option.style.display = 'none'; // Cacher l'option si elle est sélectionnée ailleurs
+                            } else {
+                                option.style.display = 'block'; // Afficher l'option si elle n'est pas sélectionnée
+                            }
+                        });
+                    });
+                });
+            });
+
+    const typeInterventionSelect = document.getElementById('typeIntervention');
+    const interventionDetails = document.getElementById('interventionDetails');
+    const infractionSelectDiv = document.getElementById('infractionSelectDiv');
+    const infractionSelect = document.getElementById('infractionSelect');
+    const infractionInput = document.getElementById('infractionInput');
+    const infractionSuggestions = document.getElementById('infractionSuggestions');
+    const infractionId = document.getElementById('infractionId');
+    const typeIdIntervention = document.createElement('input');
+    typeIdIntervention.type = 'hidden';
+    typeIdIntervention.id = 'typeIdIntervention';
+    document.getElementById('interventionDetails').appendChild(typeIdIntervention);
+    let infractions = []; // Stocker les infractions chargées
+    let infractionsLoaded = false;
+    let currentInfractionFocus = -1;
+
+
+
+    typeInterventionSelect.addEventListener('change', function() {
+    infractionInput.value = ''; // Réinitialiser le champ infraction
+    infractionSuggestions.innerHTML = ''; // Vider les suggestions
+    const [typeId, typeIntervention] = this.value.split(',');
+
+    if (this.value) { // Si un type d'intervention est sélectionné
+        interventionDetails.style.display = 'block'; // Afficher les champs communs
+        document.getElementById('typeIdIntervention').value = typeId; // Stocker l'ID du type d'intervention
+        
+        // Gérer l'affichage du champ infraction
+        if (typeIntervention === 'MAD' || typeIntervention === 'CODE DE LA ROUTE') {
+            infractionInputDiv.style.display = 'block';
+            loadInfractions(typeIntervention);
+        } else {
+            infractionInputDiv.style.display = 'none';
+            infractionSuggestions.style.display = 'none';
+        }
+    } else {
+        // Si aucun type d'intervention n'est sélectionné, tout masquer
+        interventionDetails.style.display = 'none';
+        infractionInputDiv.style.display = 'none';
+        infractionSuggestions.style.display = 'none';
+    }
+});
+
+// Gestionnaire d'événement pour la touche "Entrée" dans le champ infractionInput
+infractionInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Empêcher la soumission du formulaire
+                    
+                    const typeInterventionSelect = document.getElementById('typeIntervention');
+                    const selectedValue = typeInterventionSelect.value.split(',')[1];
+                    
+                    if (selectedValue === 'MAD' && infractionInput.value.trim() === '') {
+                        // Si "MAD" est sélectionné et le champ est vide, afficher toutes les suggestions
+                        infractionSuggestions.innerHTML = '';
+                        infractions.forEach((infraction) => {
+                            const div = document.createElement('div');
+                            const infractionName = infraction.libelle;
+                            const natinfText = infraction.natinf ? `NATINF ${infraction.natinf} - ` : '';
+                            
+                            div.innerHTML = `<span style="color: #8B0000; "><strong>${natinfText}</strong></span>${infractionName}`;
+                            div.className = 'address-suggestion';
+                            
+                            div.addEventListener('click', () => {
+                                infractionInput.value = natinfText + infractionName;
+                                infractionId.value = infraction.id_mad; // Stocker l'ID de l'infraction
+                                infractionSuggestions.style.display = 'none';
+                            });
+
+                            infractionSuggestions.appendChild(div);
+                        });
+                        infractionSuggestions.style.display = 'block';
+                    } else if (currentInfractionFocus > -1) {
+                        const suggestions = infractionSuggestions.getElementsByClassName('address-suggestion');
+                        if (suggestions.length > 0 && suggestions[currentInfractionFocus]) {
+                            infractionInput.value = suggestions[currentInfractionFocus].textContent;
+                            infractionSuggestions.style.display = 'none';
+                            currentInfractionFocus = -1;
+                        }
+                    } else {
+                        infractionSuggestions.style.display = 'none';
+                    }
+                }
+            });
+
+function loadInfractions(typeIntervention) {
+    let apiUrl = typeIntervention === 'MAD' ? '/api/mad' : '/api/infractions';
+    
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Données reçues:', data);
+            // Adapter le mapping en fonction du type d'intervention
+            infractions = data ?? [];
+            console.log('Infractions chargées:', infractions);
+        })
+        .catch(error => {
+        console.error('Erreur:', error);
+        
+        // Supprimer le message de chargement s'il existe encore
+        if (loadingMessage) loadingMessage.remove();
+        
+        // Afficher un message d'erreur
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger';
+        errorMessage.textContent = 'Erreur lors de la validation des interventions: ' + error.message;
+        document.querySelector('.recap-section').prepend(errorMessage);
+        
+        // Supprimer le message après 5 secondes
+        setTimeout(() => errorMessage.remove(), 5000);
+    });
+}
+
+// Fonction pour extraire les informations des agents à partir du nom de l'équipage
+function getAgentsFromEquipage(equipageName) {
+    // Trouver la carte d'équipage correspondante
+    const equipageCards = document.querySelectorAll('.equipage-card');
+    let agents = [];
+    
+    for (const card of equipageCards) {
+        const cardTitle = card.querySelector('h4').textContent.trim();
+        if (cardTitle === equipageName) {
+            // Récupérer tous les noms d'agents dans cet équipage
+            const agentDivs = card.querySelectorAll('div > div');
+            agentDivs.forEach(div => {
+                const agentName = div.textContent.replace(' - ', '').trim();
+                if (agentName) {
+                    // Extraire l'ID après le dernier tiret
+                    const match = agentName.match(/- (\d+)\s*$/);
+                    const matricule = match ? match[1] : null;
+
+                    agents.push({
+                        matricule: matricule
+                    });
+                }
+            });
+            break;
+        }
+    }
+    
+    return agents;
+}
+
+function filterInfractions(searchText) {
+    if (!searchText) {
+        infractionSuggestions.style.display = 'none';
+        return;
+    }
+    const matchingInfractions = infractions.filter(infraction => 
+        infraction.libelle?.toLowerCase().includes(searchText.toLowerCase()) ||
+        infraction.id_infraction?.toString().includes(searchText) ||
+        infraction.id_mad?.toString().includes(searchText) ||
+        infraction.natinf?.toString().includes(searchText)
+    ).slice(0, 5);
+
+
+    infractionSuggestions.innerHTML = '';
+
+    if (matchingInfractions.length > 0) {
+        matchingInfractions.forEach((infraction) => {
+            const div = document.createElement('div');
+            const infractionName = infraction.libelle;
+            const natinfText = infraction.natinf ? `NATINF ${infraction.natinf} - ` : '';
+            const infractionId = infraction.id_mad ?? infraction.id_infraction;
+            const infractionInput = document.getElementById('infractionInput');
+            
+            div.innerHTML = `<span style="color: #8B0000;"><strong>${natinfText}</strong></span>${infractionName}`;
+            div.className = 'address-suggestion';
+            
+            div.addEventListener('click', () => {
+                    infractionInput.value = natinfText + infractionName;
+                    infractionSuggestions.style.display = 'none';
+                    document.getElementById('infractionId').value = infractionId;
+                });
+
+            infractionSuggestions.appendChild(div);
+        });
+        infractionSuggestions.style.display = 'block';
+    } else {
+        infractionSuggestions.style.display = 'none';
+    }
+}
+
+// Gestionnaire d'événement pour la saisie
+    infractionInput.addEventListener('input', (e) => {
+        filterInfractions(e.target.value);
+    });
+
+// Gestionnaire d'événement pour le focus
+    infractionInput.addEventListener('focus', () => {
+        if (infractionInput.value) {
+            filterInfractions(infractionInput.value);
+        }
+    });
+
+// Gestionnaire pour clic en dehors des suggestions
+    document.addEventListener('click', (e) => {
+        if (!infractionInput.contains(e.target) && !infractionSuggestions.contains(e.target)) {
+            infractionSuggestions.style.display = 'none';
+        }
+    });
+    const equipageSelect = document.getElementById('equipageSelect');
+    // État initial du select
+    updateTypeInterventionSelect();
+});
+
+        // Réinitialiser les sélections des agents lors de l'ouverture de la modal
+        const modalElement = document.getElementById('creerEquipageModal');
+        modalElement.addEventListener('show.bs.modal', function () {
+            const agentSelects = modalElement.querySelectorAll('.agent-select');
+            agentSelects.forEach(select => {
+                select.selectedIndex = 0; // Réinitialiser à la première option
+            });
+        });
+
+        // Fonction pour modifier un équipage
+        function modifierEquipage(nomEquipage) {
+            console.log("Fonction modifierEquipage appelée");
+        }
+
+        // Fonction pour supprimer un équipage
+        function supprimerEquipage(nomEquipage) {
+            console.log(`Tentative de suppression de l'équipage : ${nomEquipage}`);
+            const equipageSection = document.getElementById('listeEquipages');
+            const equipages = equipageSection.getElementsByClassName('equipage-card');
+            for (let i = 0; i < equipages.length; i++) {
+                const equipageNom = equipages[i].querySelector('h4').textContent.trim();
+                if (equipageNom === nomEquipage) {
+                    equipageSection.removeChild(equipages[i]);
+                    console.log(`Équipage ${nomEquipage} supprimé.`);
+                    break;
+                }
+            }
+            // Réorganiser les équipages restants
+            const equipagesRestants = equipageSection.getElementsByClassName('equipage-card');
+            for (let j = 0; j < equipagesRestants.length; j++) {
+                equipagesRestants[j].querySelector('h4').textContent = `Équipage ${j + 1}`; // Mettre à jour le nom de l'équipage
+            }
+
+            // Appeler après la suppression
+            updateTypeInterventionSelect();
+        }
+
+        // Fonction pour ajouter un équipage
+        function ajouterEquipage() {
+            let equipageId;
+            let compteur = 1;
+            do {
+                equipageId = `Équipage ${compteur}`;
+                compteur++;
+            } while (equipagesExistants.includes(equipageId));
+
+            equipagesExistants.push(equipageId);
+
+            const equipageDiv = document.createElement('div');
+            equipageDiv.className = 'equipage-card';
+            equipageDiv.innerHTML = `<h4>${equipageId}</h4>`;
+
+            // Utiliser la fonction de equipage.js
+            const actionButtonsDiv = createActionButtons(equipageId);
+            equipageDiv.appendChild(actionButtonsDiv);
+
+            document.getElementById('listeEquipages').appendChild(equipageDiv);
+        }
+
+        function validerIntervention() {
+            // Récupération des valeurs
+            const adresse = document.getElementById('lieuIntervention').value.trim();
+            const nombreInterventions = parseInt(document.getElementById('nombreInterventions').value);
+            const selectedValue = document.getElementById('typeIntervention').value;
+            const [typeId, typeIntervention] = selectedValue.split(',');
+            const equipageSelect = document.getElementById('equipageSelect');
+            const equipageNom = equipageSelect.options[equipageSelect.selectedIndex].text;
+            const infractionInput = document.getElementById('infractionInput');
+            const typeIdSelect = document.getElementById('typeIntervention').value[0];
+            const lieuIdInput = document.getElementById('lieuIdIntervention').value;
+            const infractionId = document.getElementById('infractionId').value;
+
+            // Vérification de l'adresse
+            if (!addresses.some(addr => addr.nomadresse.toLowerCase() === adresse.toLowerCase())) {
+                alert("L'adresse saisie n'est pas valide. Veuillez sélectionner une adresse dans la liste proposée.");
+                document.getElementById('lieuIntervention').focus();
+                return;
+            }
+
+            // Vérification du nombre d'interventions
+            if (nombreInterventions <= 0) {
+                alert("Le nombre d'interventions doit être supérieur à 0. Veuillez saisir une valeur valide.");
+                document.getElementById('nombreInterventions').focus();
+                return;
+            }
+
+            // Détermination du type d'intervention à afficher
+            let typeAffiche = typeIntervention;
+            if (typeIntervention === 'CODE DE LA ROUTE' || typeIntervention === 'MAD') {
+                if (!infractionInput.value.trim()) {
+                    alert("Veuillez saisir une infraction.");
+                    infractionInput.focus();
+                    return;
+                }
+                typeAffiche = infractionInput.value.trim();
+            }
+
+            // Vérification si une ligne identique existe déjà
+            const tbody = document.getElementById('recapInterventions');
+            const existingRows = tbody.getElementsByTagName('tr');
+            
+            for (let row of existingRows) {
+                const cells = row.getElementsByTagName('td');
+                const existingEquipage = cells[0].textContent;
+                const existingType = cells[1].textContent;
+                const existingNombre = parseInt(cells[2].textContent);
+                const existingLieu = cells[3].textContent;
+
+                if (existingEquipage === equipageNom &&
+                    existingType === typeAffiche &&
+                    existingLieu === adresse) {
+                    alert("Cette intervention existe déjà dans le tableau récapitulatif !");
+                    return;
+                }
+            }
+
+            // Si on arrive ici, c'est que l'intervention n'existe pas encore
+            const newRow = document.createElement('tr');
+            newRow.style.color = 'white';
+            
+            // Alterner les couleurs de fond
+            const rows = tbody.getElementsByTagName('tr');
+            const isEven = rows.length % 2 === 0;
+            newRow.style.backgroundColor = isEven ? '#8B0000' : '#000080'; // Rouge foncé ou Bleu marine
+
+            // Construction de la ligne
+            newRow.innerHTML = `
+                <td>${equipageNom}</td>
+                <td>${typeAffiche}</td>
+                <td>${nombreInterventions}</td>
+                <td>${adresse}</td>
+                <td>${typeId}</td>
+                <td>${lieuIdInput}</td>
+                <td>${infractionId}</td>
+                <td style="display: none">${typeIntervention}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="supprimerIntervention(this.closest('tr'))">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(newRow);
+
+            // Réinitialiser les champs
+            document.getElementById('lieuIntervention').value = '';
+            document.getElementById('nombreInterventions').value = '1';
+            document.getElementById('typeIntervention').value = ''; // Réinitialiser le type d'intervention
+            if (infractionInput) infractionInput.value = '';
+            // Cette réinitialisation du type d'intervention déclenchera automatiquement
+            // l'événement 'change' qui masquera les autres champs si nécessaire
+            document.getElementById('typeIntervention').dispatchEvent(new Event('change'));
+        }
+
+        function supprimerIntervention(row) {
+            if (confirm("Êtes-vous sûr de vouloir supprimer cette intervention ?")) {
+                row.remove();
+            }
+        }
+
+        // Ajouter cette fonction une seule fois au début du script
+        function updateTypeInterventionSelect() {
+            const typeInterventionSelect = document.getElementById('typeIntervention');
+            const listeEquipages = document.getElementById('listeEquipages');
+            const equipages = listeEquipages.getElementsByClassName('equipage-card');
+            
+            if (equipages.length > 0) {
+                typeInterventionSelect.disabled = false;
+                document.getElementById('avertissementEquipage').style.display = 'none';
+                console.log('Menu type intervention activé - Nombre d\'équipages:', equipages.length);
+            } else {
+                typeInterventionSelect.disabled = true;
+                typeInterventionSelect.value = '';
+                document.getElementById('interventionDetails').style.display = 'none';
+                document.getElementById('infractionInputDiv').style.display = 'none';
+                document.getElementById('avertissementEquipage').style.display = 'block';
+                console.log('Menu type intervention désactivé - Aucun équipage');
+            }
+        }
+        
+    </script>
+<footer  style="position: fixed; bottom: 10px; left: 10px; color: rgb(17, 121, 224); font-size: 0.8em; color: white; ">
+    Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
+</footer>
+</body>
+</html>

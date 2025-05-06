@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>POLICE MUNICIPALE - LACIOTAT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <style>
+        body {
+            background-color: #001f3f;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .swal-title-custom {
+            font-size: 2em;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 2px;
+            padding: 10px 0;
+        }
+
+
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #001f3f 0%, #0056b3 50%, #00a8e8 100%);
+            color: white;
+            padding: 0.2rem 0.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 15px rgba(0,56,168,0.3);
+            min-height: 100px;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+
+        .gradient-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                rgba(255,255,255,0) 25%,
+                rgba(255,255,255,0.1) 50%,
+                rgba(255,255,255,0) 75%
+            );
+            transition: all 0.4s;
+        }
+
+        .gradient-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,86,179,0.5);
+            color: #00ff00;
+        }
+        .gradient-btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-icon {
+            font-size: 2rem;
+            margin-bottom: 0.6rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .gradient-btn:hover .btn-icon {
+            transform: scale(1.1);
+        }
+
+        /* Version mobile */
+        @media (max-width: 768px) {
+            .btn-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            
+            .gradient-btn {
+                padding: 0.75rem;
+                min-height: 80px;
+            }
+            
+            .btn-icon {
+                font-size: 1.75rem;
+            }
+        }
+
+        .header {
+            background: linear-gradient(to right, #0056b3, #ffffff, #d32f2f);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-bottom: 4px solid #d32f2f;
+        }
+        .schedule-card, .event-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .schedule-item, .event-item {
+            background-color: rgba(0, 86, 179, 0.3);
+            border-left: 4px solid #d32f2f;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .time-badge {
+            background: linear-gradient(45deg, #0056b3, #00a8e8);
+            color: #ffffff;
+            padding: 8px 15px;
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            font-size: 0.9em;
+            margin-right: 10px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+        }
+        .welcome-message {
+            text-align: center;
+            font-size: 1.5em;
+            color: #001f3f;
+            margin: 20px 0;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .time-badge:hover {
+            background: linear-gradient(45deg, #00a8e8, #0056b3);
+            box-shadow: 0 0 25px  rgba(0, 200, 255, 0.5);
+            transform: scale(1.05);
+        }
+        .section-title {
+            color: #ffffff;
+            border-bottom: 2px solid #d32f2f;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-family: 'Algerian', sans-serif;
+            text-align: center;
+            width: 100%;
+        }
+        .digital-clock {
+            font-family: 'Digital-7', monospace;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #0056b3;
+        }
+        .digital-clock h5 {
+            font-size: 2em;
+            margin: 0;
+            color:  #60c8f8;
+            letter-spacing: 2px;
+        }
+        .digital-clock p {
+            font-size: 1em;
+            margin: 5px 0 0 0;
+            color: #00e1ff;
+        }
+        @font-face {
+            font-family: 'Digital-7';
+            src: url('https://fonts.cdnfonts.com/css/digital-7-mono') format('woff');
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .action-btn {
+            background: linear-gradient(45deg, #000428, #004e92);
+            color: #00ffff;
+            border: 2px solid rgba(0, 255, 255, 0.4);
+            padding: 15px 30px;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 15px rgba(0, 255, 255, 0.2);
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            margin-bottom: 100px;
+        }
+        .action-btn:hover {
+            background: linear-gradient(45deg, #0056b3, #00a8e8);
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(0, 200, 255, 0.6);
+            transform: scale(1.02);
+            border-color: rgba(0, 255, 255, 0.6);
+        }
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .action-btn:hover::before {
+            left: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="d-flex justify-content-between align-items-center">
+            <img src="Logo_La_Ciota.png" alt="Logo La Ciotat" style="height: 80px;">
+            <div class="d-flex flex-column align-items-center">
+                <h1 class="text-center mb-0" style="color: #001f3f; font-family: 'mokoto', sans-serif; font-size: 70px;">POLICE MUNICIPALE</h1>
+                <div class="welcome-message" style="color: #0056b3;">Agent <span th:text="${session.prenom_agent + ' ' + session.nom_agent}"></span></div>
+            </div>
+            <img src="Logo_La_Ciota.png" alt="Logo La Ciotat" style="height: 80px;">
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div  class="col-md-2 d-flex flex-column align-items-center" style="flex: 0 0 auto; width: 16%;">
+                <h2 class="section-title text-center w-100" style="color: #ccddee;font-family: 'epyval';">ÉPHÉMÉRIDE</h2>
+                <div class="event-card w-100" id="datetime-card">
+                    <div class="event-item text-center digital-clock">
+                        <h5 id="current-time">--:--:--</h5>
+                        <div class="icalwidg" style="color: rgb(69, 205, 247); font-family:'Trebuchet Ms', Arial, sans-serif;margin:0px  auto; min-width: 150px; max-width: 200px; overflow: hidden; position: relative; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.07), 0 4px 8px rgba(0, 0, 0, 0.07), 0 8px 16px rgba(0, 0, 0, 0.07), 0 16px 32px rgba(0, 0, 0, 0.07); border-radius: 5px; font-size:20px;"> <a title="Le calendrier du jour sur votre site avec iCalendrier.fr" href="https://icalendrier.fr" rel="" style="position: absolute;color: rgba(255,255,255,0.8);font-size: 11px;text-decoration: none;text-align: right;top: 134px;right: 2px;"> </a>
+                             <div style="width: 100%; aspect-ratio: 2; background: linear-gradient(90deg, 100%); font-size: 1.5em; line-height: 1.1; display: flex; flex-direction: column; justify-content: center; text-align: center; color: #fff;"> <div style="color: rgb(245, 66, 75);font-weight: 600;">
+                                <script> (function () { window.glbf = false; window.caldate = new Date(Date.now()); var a = document.getElementsByTagName('a'); var b = a.length; var c, att, tl, i, k, hrefValue; for (i = 0; i < b; i++) { c = a[i]; att = c.attributes; tl = att.length; for (k = 0; k < tl; k++) { if ("href" === att[k].name) { hrefValue = att[k].value; if (0 === hrefValue.indexOf('https://icalendrier.fr')) { window.glbf = true; i = b } k = tl } } } })(); (function () { if (window.glbf) { let d = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"]; document.write(d[window.caldate.getDay()]); } })();
+                                </script> 
+                            </div> 
+                        <div style="color: rgb(69, 205, 247);font-size: 2.0833em;font-weight: 900; font-family: 'Tahoma', 'Verdana', sans-serif;"> 
+                            <script >(function () { if (window.glbf) { let a = window.caldate.getDate(); if (a < 10) { a = "0" + a } document.write("" + a); } })();
+                            </script> 
+                        </div> 
+                        <div style="color: rgb(245, 66, 75);font-weight: 600;">
+                         <script> (function () { let a = ["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."]; document.write(a[window.caldate.getMonth()] + ' ' + window.caldate.getFullYear()) })();
+                         </script>
+                        </div> 
+                    </div> 
+                        <div style=" margin: 0.7em 0 0.75em; display: grid; grid-template-columns: 1fr 7px 1fr; grid-column-gap: 0.3em; grid-row-gap: 0.4em; text-align: center; position: relative; font-size: 1.1em;">
+                             <div style="text-align: center;"> Semaine <script> (function () { if (window.glbf) { Date.prototype.getWeek = function () { var e = new Date(this.valueOf()); var t = (this.getDay() + 6) % 7; e.setDate(e.getDate() - t + 3); var n = e.valueOf(); e.setMonth(0, 1); if (e.getDay() !== 4) { e.setMonth(0, 1 + (4 - e.getDay() + 7) % 7) } return 1 + Math.ceil((n - e) / 6048e5) }; document.write((new Date()).getWeek()) } })();
+                              </script> 
+                            </div>
+                             <div style="font-weight: 800; font-size: 1.1em; text-align: center; line-height: 1.1em;"> - </div> 
+                             <div style="text-align: center;font-size: 1.1em;">
+                                <script>eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('(7w(){E f={"1":{"1":"7v 0 l\'7u","2":"7t","3":"7sè7r","4":"7q","5":"7p","6":"Mé7o","7":"7n","8":"7m","9":"7l","10":"7k","11":"7j","12":"7i","13":"7h","14":"7g","15":"Ré7f","16":"7e","17":"7d","18":"7c","19":"7b","20":"Sé7a","21":"79ès","22":"X","23":"78","24":"cçi 0 77","25":"76 0 w","26":"75","27":"74èg","28":"1f d\'73","29":"72","30":"71","31":"70"},"2":{"1":"6Z","2":"Té6Y","3":"6X","4":"Vé6W","5":"6V","6":"6U","7":"6Tè6S","8":"6R","9":"6Q","10":"6P","11":"6O 1b 0 6N","12":"Fé6M","13":"Bé6L","14":"6K","15":"6J","16":"6I","17":"6H","18":"6G","19":"6F","20":"Zée","21":"Y","22":"6E","23":"6D","24":"6C","25":"6Béo","26":"6A","27":"6z","28":"6y","29":"6x"},"3":{"1":"6w","2":"U g 6v","3":"6ué6té","4":"6s","5":"6r","6":"6q","7":"Fé6pé","8":"b 0 6o","9":"cçk","10":"6n","11":"6m","12":"6l","13":"6k","14":"6j","15":"6i","16":"Béné6h","17":"6g","18":"6f","19":"1i","20":"6e","21":"Qé6d","22":"Léa","23":"6c","24":"q","25":"6b","26":"6a","27":"69","28":"68","29":"67","30":"66édée","31":"65"},"4":{"1":"64","2":"63","3":"62","4":"61","5":"1gèy","6":"60","7":"b-1h 0 m 5Z","8":"5Y","9":"5X","10":"5W","11":"5V","12":"5U","13":"5T","14":"5S","15":"5R","16":"1dît-1i","17":"5Q","18":"5P","19":"5O","20":"5N","21":"5M","22":"5L","23":"5K","24":"5Jèg","25":"5I","26":"5H","27":"5G","28":"5Fé5E","29":"q 0 5D","30":"5C"},"5":{"1":"Fê1c 5B 5A","2":"5z","3":"5y - p","4":"5x","5":"5w","6":"5v","7":"5uèg","8":"5t 5s","9":"5rôv","10":"5q","11":"5p","12":"5o","13":"5n","14":"5m","15":"5l","16":"5ké","17":"5j","18":"5i","19":"5h","20":"5g","21":"5f","22":"5e","23":"5d","24":"5c","25":"5b","26":"Bé5a","27":"1a","28":"59","29":"58","30":"57","31":"56 0 m 55 54"},"6":{"1":"53","2":"52","3":"Ké51","4":"50","5":"4Z","6":"4Y","7":"4X","8":"Mé4W","9":"4V","10":"4U","11":"4Té","12":"4S","13":"1e 0 4R","14":"4Qée","15":"4P","16":"b cçi Ré4O","17":"4Né","18":"Lé4M","19":"4L","20":"4KèI","21":"4Jé","22":"4I","23":"4H","24":"b-1h","25":"4G","26":"4F","27":"4E","28":"1génée","29":"O - w","30":"4D"},"7":{"1":"4C","2":"4B","3":"1f","4":"4A","5":"1e","6":"4z","7":"4y","8":"4x","9":"4w","10":"4v","11":"1dît","12":"4u","13":"4t x 4sël","14":"Fê1c 4r","15":"4q","16":"4p 1b 4o 4n","17":"4m","18":"4lédé4k","19":"4jèy","20":"4i","21":"4h","22":"u 4g","23":"4f","24":"4e","25":"p","26":"4d x 4c","27":"4b","28":"4a","29":"49","30":"48","31":"47 0 46"},"8":{"1":"45","2":"44 43","3":"42","4":"b-u 41","5":"40","6":"3Z","7":"Né3Y","8":"3X","9":"3W","10":"3V","11":"3U","12":"3T","13":"3S","14":"3R","15":"3Q","16":"3P","17":"3O","18":"Hélèy","19":"b 3N","20":"3M","21":"3L","22":"3K","23":"3J 0 3I","24":"3Hélé3G","25":"3F","26":"3E","27":"3D","28":"1a","29":"3C","30":"3B","31":"3A"},"9":{"1":"3z","2":"3y","3":"3xé3w","4":"3v","5":"3uï3t","6":"3s","7":"3r","8":"3qé","9":"3p","10":"3oès","11":"3n","12":"3m","13":"Zé","14":"3l 3k","15":"3j","16":"3i","17":"3h","18":"3gè3f","19":"3e","20":"3d","21":"3c","22":"3b","23":"3a","24":"hè39","25":"38","26":"Côv x Y","27":"X 0 w","28":"37","29":"36","30":"Jérôv"},"10":{"1":"hérèW 0 l\'35 Jé34","2":"Lé33","3":"Gé32","4":"cçi d\'2Z","5":"2Y","6":"2X","7":"2W","8":"Pé2V","9":"2U","10":"2T","11":"2S","12":"2R","13":"Gé2Q","14":"2P","15":"hérèW d\'2O","16":"2N","17":"2M","18":"2L","19":"2Ké","20":"2J","21":"Cé2I","22":"2H","23":"b 0 2G","24":"2F","25":"2Eé2D","26":"2C","27":"2B","28":"2A","29":"2z","30":"2y","31":"2x"},"11":{"1":"2w","2":"Dé2v","3":"2u","4":"U","5":"2t","6":"2s","7":"2r","8":"2q","9":"hé2p","10":"Lé2o","11":"2n 2m","12":"2l","13":"2k","14":"2j","15":"2i","16":"2h","17":"2g","18":"2f","19":"2e","20":"2d","21":"Té2c 0 u","22":"Cé2b","23":"Qé2a","24":"1Z","25":"q","26":"1Y","27":"Sé1X","28":"p 0 m 1W","29":"1V","30":"1Ué"},"12":{"1":"1T","2":"1S","3":"cçi 1R","4":"1Q","5":"Gé1P","6":"1O","7":"1N","8":"1Mée 1L","9":"O 1K","10":"1J","11":"1I","12":"1H-cçk 0 1G","13":"1F","14":"1E","15":"1D","16":"1C","17":"Nël","18":"1B","19":"1A","20":"hé1z","21":"1y","22":"cçk 1xèI","23":"1w","24":"1vèg","25":"1uël","26":"1t","27":"b","28":"1s","29":"1r","30":"1q","31":"1p"}};1o(j.1n){E z=f[j.A.1m()+1][j.A.1l()];1k.1j(z)}})();',62,467,'de|||||||||||Jean|Fran||||le|Th|ois|window|oise||la|||Jacques|Catherine||||Marie|me|Paul|et|ne|tod|caldate||||var||||re|||||Ga|Pierre||Cl|||Pr|Charles||se|Vincent|Damien|Aim|||||||||||Augustin|Dame|te|Beno|Antoine|Thomas|Ir|Baptiste|Joseph|write|document|getDate|getMonth|glbf|if|Sylvestre|Roger|David|Innocents|Etienne|No|Ad|Armand|Xavi|Hiver|ophile|Urbain|Gatien|Alice|Ninon|Odile|Lucie|Chantal|Jeanne|Daniel|Romaric|Fourier|Conception|Immacul|Ambroise|Nicolas|rald|Barbara|Xavier|Viviane|Florence|Andr|Saturnin|Marche|vrin|Delphine|Flora|||||||||||ment|cile|sence|Edmond|Tanguy|Aude|Elisabeth|Marguerite|Albert|Sidoine|Brice|Christian|1918|Armistice|on|odore|Geoffroy|Carine|Bertille|Sylvie|Hubert|funts|Toussaint|Quentin|Bienvenue|Narcisse|Jude|Emeline|Dimitri|pin|Cr|Florentin|Capistran|Elodie|line|Adeline|Ren|Luc|Baudoin|Edwige|Avila|Juste|raud|Wilfried|Firmin|Ghislain|Denis|lagie|Serge|Bruno|Fleur|Assise|||rard|ger|sus|Enfant|Michel|Venceslas|Hermann|cle|Automne|Maurice|Matthieu|Davy|Emilie|ge|Nad|Renaud|Edith|Roland|Glorieuse|Croix|Apollinaire|Adelphe|In|Alain|Nativit|Reine|Bertrand|ssa|Ra|Rosalie|goire|Gr|Ingrid|Gilles|Aristide|Fiacre|Sabine|Monique|Natacha|Louis|my|Barth|Lima|Rose|Fabrice|Christophe|Bernard|Eudes|Hyacinthe|Armel|Assomption|Evrard|Hippolyte|Clarisse|Claire|Laurent|Amour|Dominique|tan|Transfiguration|Abel|Vianney|Lydie|Eymard|Julien|Alphonse|Loyola|Ignace|Juliette|Marthe|Samson|Nathalie|Joachin|Anne|Christine|Brigitte|Madeleine|Victor|Marina|Ars|ric|Fr|Charlotte|Carmel|Mt|Nte|Donald|Nationale|Jo|Henri|Olivier|Ulrich|Amandine|Thibault|Raoul|Mariette|Florent|Martinien|Thierry|Martial|Fernand|Anthelme|Prosper|Audrey|Alban|Et|Silv|Romuald|once|Herv|gis|Germaine|Elis|Padoue|Guy|Barnab|Landry|Diane|dard|Gilbert|Norbert|Igor|Clotilde|vin|Blandine|Justin|Vierge|Sainte|Visitation|Ferdinand|Aymar|Germain|renger|Sophie|Donatien|Didier|Emile|Constantin|Bernardin|Yves|Eric|Pascal|Honor|Denise|Matthias|Rolande|Achille|Estelle|Solange|Pac|1945|Victoire|Gis|Prudence|Judith|Sylvain|Philippe|Boris|travail|du|Robert|Sienne|rie|Val|Zita|Alida|Marc|Fid|Georges|Alexandre|Anselme|Odette|Emma|Parfait|Anicet|Paterne|Maxime|Ida|Jules|Stanislas|Fulbert|Gautier|Julie|Salle|Marcellin|Isidore|Richard|Sandrine|Hugues|Benjamin|Am|Gwladys|Gontran|Habib|Larissa|Annonciation|Victorien|mence|Printemps|Cyrille|Patrice|dicte|Louise|Mathilde|Rodrigue|Justine|Rosine|Vivien|Dieu|licit|Colette|Olive|Casimir|nol|Gu|Bon|Aubin|Auguste|Romain|Honorine|Nestor|Rom|Modeste|Lazare|Isabelle|Gabin|Bernadette|Alexis|Julienne|Claude|Valentin|atrice|lix|Lourdes|Notre|Arnaud|Apolline|Jacqueline|nie|Eug|Gaston|Agathe|ronique|Blaise|sentation|Ella|Marcelle|Martine|Gildas|Aquin|Ang|Paule|Conversion|Sales|Banard|Agn|bastien|Marius|Prisca|Roseline|Marcel|mi|Nina|Yvette|Tatiana|Pauline|Guillaume|Alix|Lucien|Raymond|laine|Edouard|Odilon|ve|Genevi|Basile|an|Jour|function'.split('|'),0,{}))
+                                </script> 
+                             </div>
+                    <div style="grid-column: 1/span 3;"> <span class="mphabg" style="display: inline-block; width: 18px; height:18px; background-position: 0 0; vertical-align: middle; margin-top: -2px; background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAAkBAMAAADbS/oRAAAAMFBMVEUAAAA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1STLyxAAAAEHRSTlMAd+7/iCJmzKozVZkRu0TdLxRlLgAAAu1JREFUeAHs0wFklHEcxvHnZXe3297WuzITVLwCJt2ebbfbai4hBGcDQGMAEKUYMQoIZkFAZwHAZQFgXBRBWSRBGoDYjCRJ97+353+/n6AE0Bf4fW6397md4X9/1nhOXm79s5QnyflTsCUnyJmJv5TqPYbqbS+dcS+chZMdLsLJ80ungfKZQwx6tDiBcs51L0d0Mj+xRic7LKpvOqlj5I6TWcBLE1aSmV2EPv+AelkDgIfke8mrIEf0kpBWHlMteMmQOJkFnNQBI+k7Ldtu6o/4NUzsP69t5YhOwmIjYxyUOZkCtiQaFCUnlwAj1zv4VekuivazYmpO1qJokJG9cEs0TyQprtKhkTBIskXyAJBE7/diA6HqEoqu6LNW56BBRkoMSUo5TW0r9fBgiQZJ9H5JpYNYeguh5VUMPvNCXzINspIwJDlG2zknLWBEokGFDId7ExjIVZiWPwLAW50VktMtAB+gQVYqDEnWaFt0kgF4INGgKNPhkJQaMCUHAMrfdQ6xV6cnU3GQlW44JHpRtSR6fSWKBknmwyEZ7cD2BcDxVV3l4t0S/T7Jk3BIxuhrWrkBYDiKBklq4ZB0N2GbBLANVWWvGeDTrhskORkOyRB9ZwvRAYxE0SDJXDgkk3B1W8AzqJTFN3wNbpBkJxySCn0NKxcBpFE0SLIUDsl9uCqrwDfE8uJ/YN0PkuyRjNKlbyGKFqxLNEjSABDlNlyjTaT6cS1opw1zGrlJUoIV+mpRtOBNX3RKdErOw5VsoHoBRXpkJtGgIDol2P9tkERfytO+aIFEp6QBV/IaY2bQz10GW8aH4SC+we+gQRdlgy5R0zLba2Fk+18Y2f4Xeranb8G4G6Ng3I1WMNK56liEUXUsQqs6Bl3lOuiaH2Q30HiJaaCVkN5AG2xNWAoa+ZPxNvIvgCk+WMEgTGwjf7B1gwZpR5GBB6MrzYPRleYhpSv9i8yuNNUHG0IoH2ygfDhmI8pwjDywuJSjYDiGMBgFANAmaH32mB1ZAAAAAElFTkSuQmCC); background-size: 144px;"></span> 
+                        <script type="text/javascript"> function moon_day(e) { var t = function (e) { return e - Math.floor(e) }; var n = e.getJulian(); var r = e.getFullYear(); var i = 3.14159265 / 180; var s, o, u, a, f, l, c, h, p, d; s = Math.floor((r - 1900) * 12.3685); o = (r - 1899.5) / 100; u = o * o; a = o * o * o; f = 2415020 + 29 * s; l = 1178e-7 * u - 1.55e-7 * a + (.75933 + .53058868 * s) - (837e-6 * o + 335e-6 * u); c = 360 * t(s * .08084821133) + 359.2242 - 333e-7 * u - 347e-8 * a; h = 360 * t(s * .07171366128) + 306.0253 + .0107306 * u + 1236e-8 * a; p = 360 * t(s * .08519585128) + 21.2964 - .0016528 * u - 239e-8 * a; var v = 0; var m = 0; while (m < n) { var g = l + 1.530588 * v; var y = (c + v * 29.10535608) * i; var b = (h + v * 385.81691806) * i; var w = (p + v * 390.67050646) * i; g -= .4068 * Math.sin(b) + (.1734 - 393e-6 * o) * Math.sin(y); g += .0161 * Math.sin(2 * b) + .0104 * Math.sin(2 * w); g -= .0074 * Math.sin(y - b) - .0051 * Math.sin(y + b); g += .0021 * Math.sin(2 * y) + .001 * Math.sin(2 * w - b); g += .5 / 1440; d = m; m = f + 28 * v + Math.floor(g); v++ } return (n - d) / 29.53059 } Date.prototype.getJulian = function () { return this / 864e5 - this.getTimezoneOffset() / 1440 + 2440587.5 }; var today = new Date; var names = ["Nouvelle lune", "Premier croissant", "Premier quartier", "Gibbeuse croissante", "Pleine lune", "Gibbeuse décroissante", "Dernier quartier", "Dernier croissant", "Nouvelle lune"]; var bgpos = [0, -18, -36, -54, -72, -90, -108, -126, 0]; var moonphIndex = Math.floor((moon_day(today) + .0625) * 8); document.querySelectorAll('.icalwidg .mphabg').forEach((mp) => { mp.style.backgroundPosition = bgpos[moonphIndex] + "px 0"; }); document.write(names[moonphIndex])
+                        </script> </div> <script> window.addEventListener('DOMContentLoaded', () => { document.querySelectorAll('.icalwidg').forEach(function (widgetDiv) { let widthUsed = widgetDiv.clientWidth; if (widthUsed === 0) { widthUsed = 300; } else if(widthUsed < 150) { widthUsed = 150; } widgetDiv.style.fontSize = (widthUsed / 15) + "px"; }); }); </script> </div></div>
+                    </div>
+                </div>
+
+                <h2 class="section-title text-center w-100 mt-4" style="color: #ccddee;font-family: 'epyval';">MÉTÉO</h2>
+                <div class="event-card w-100" id="weather-card">
+                    <div class="event-item text-center">
+                        <div id="weather-icon" style="font-size: 3em;"><img src="" alt="Icône Météo" style="width: 64px; height: 64px;"></div>
+                        <h3 id="temperature">--°C</h3>
+                        <p id="weather-desc">Chargement...</p>
+                    </div>
+                </div>
+                <script>
+                    async function updateWeather() {
+                        const API_KEY = '06aaccd26356164c786045bd4faa3813';
+                        const CITY = 'La Ciotat';
+                        const COUNTRY = 'FR';
+                        
+                        try {
+                            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY},${COUNTRY}&appid=${API_KEY}&units=metric&lang=fr`);
+                            if (!response.ok) {
+                                throw new Error(`Erreur HTTP! statut: ${response.status}`);
+                            }
+                            const data = await response.json();
+                            
+                            if (data.main && data.weather) {
+                                const temp = Math.round(data.main.temp);
+                                const condition = data.weather[0].description;
+                                const iconCode = data.weather[0].icon;
+                                
+                                document.getElementById('temperature').textContent = `${temp}°C`;
+                                document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}@2x.png" alt="${condition}" style="width: 96px; height: 96px;">`;
+                                document.getElementById('weather-desc').textContent = condition.charAt(0).toUpperCase() + condition.slice(1);
+                            } else {
+                                throw new Error('Données météo incomplètes');
+                            }
+                        } catch (error) {
+                            console.error('Erreur lors de la récupération de la météo:', error);
+                            document.getElementById('weather-desc').textContent = 'Service météo temporairement indisponible';
+                            document.getElementById('temperature').textContent = '--°C';
+                            document.getElementById('weather-icon').innerHTML = '<span style="font-size: 2em;">🌤️</span>';
+                        }
+                    }
+
+                    // Mise à jour de la météo toutes les 30 minutes
+                    updateWeather();
+                    setInterval(updateWeather, 1800000);
+
+            let currentAgentPouvoir = null;
+
+            function loadInitialData() {
+                // Charger les infos de l'agent connecté
+                fetch('/api/user-info')
+                .then(response => response.json())
+                .then(userInfo => {
+                    currentAgentPouvoir = userInfo.pouvoir;
+                    console.log('👤 Pouvoir de l\'agent connecté:', currentAgentPouvoir);
+                })
+                .catch(error => console.error('Erreur chargement agents:', error));
+            }
+
+            function checkStatAccess(event) {
+                if (currentAgentPouvoir == 'user') {
+                    event.preventDefault();
+                    Swal.fire({
+                        title: 'Accès refusé',
+                        text: 'Vous  ne disposez pas des autorisations nécessaires.',
+                        icon: 'error',
+                        iconColor: '#ff0000',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#d32f2f',
+                        background: '#00a8e8',
+                        color: '#ffffff',
+                        customClass: {
+                            title: 'swal-title-custom'
+                        }
+                    });
+                    return false;
+                }
+                return true;
+            }
+
+            loadInitialData();
+        </script>
+            </div>
+            <div class="col-md-7">
+                <h2 class="section-title text-center w-100" style="color: #ccddee; font-family: 'epyval'; margin-bottom: 20px;">
+                    OUTILS ET APPLICATIONS
+                </h2>
+                <div class="quick-actions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center;">
+                    <a href="/accueilStat" target="_blank" class="gradient-btn" onclick="return checkStatAccess(event)">
+                        <img src="stat.png" alt="STAT" style="width: 60px; height: auto; margin-bottom: 13px; margin-top: 10px;">STATISTIQUES</a>
+                    <a href="https://fourrieres.interieur.gouv.fr/auth/realms/fourriere/protocol/openid-connect/auth?response_type=code&client_id=mint-fourriere&scope=openid%20profile&redirect_uri=https://fourrieres.interieur.gouv.fr/forces-de-l-ordre" 
+                        target="_blank" class="gradient-btn" onclick="return checkStatAccess(event)">
+                        <img src="fourriere.png" alt="FOURRIERE" style="width: 70px; height: auto; margin-bottom: 15px;">FOURRIÈRES</a>
+                    <a href="/travaux" target="_blank" class="gradient-btn">
+                        <img src="qrcode.png" alt="QRCODE" style="width: 60px; height: auto; margin-bottom: 22px;">QRCODE</a>
+                    <a href="/travaux" class="gradient-btn">
+                        <img src="policeman.png" alt="MUNICIPOL" style="width: 60px; height: auto; margin-bottom: 20px;">MUNICIPOL</a>
+                    <a href="/travaux" target="_blank" class="gradient-btn" onclick="return checkStatAccess(event)">
+                        <img src="siv.png" alt="SIV" style="width: 60px; height: auto; margin-bottom: 10px;">S.I.V</a>
+                    <a href="/natinf" target="_blank" class="gradient-btn">
+                        <img src="natinf.png" alt="NATINF" style="width: 60px; height: auto; margin-bottom: 10px;">NATINF</a>
+                    <a href="/redaction" target="_blank" class="gradient-btn">
+                        <img src="redaction.png" alt="REDACTION" style="width: 60px; height: auto; margin-bottom: 10px;">RÉDACTION</a>
+                    <a href="/travaux" class="gradient-btn">
+                        <img src="procedure.png" alt="PROCEDURE" style="width: 50px; height: auto; margin-bottom: 10px;">PROCÉDURES</a>
+                </div>
+            
+                <h2 class="section-title text-center w-100" style="color: #ccddee; font-family: 'epyval'; margin-top: 50px;">
+                    LIENS RAPIDES
+                </h2>
+                <div class="quick-actions" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center;">
+                    <a href="https://intranet.laciotat.com/" target="_blank" class="gradient-btn">
+                        <img src="intranet.png" alt="INTRANET" style="width: 50px; height: auto; margin-bottom: 10px;">INTRANET</a>
+                    <a href="https://www.laciotat.com/votre-mairie/administratif/actes-administratifs/deliberations-decisions-et-arretes/arretes" target="_blank" class="gradient-btn">
+                        <img src="quill.png" alt="ARRETE" style="width: 50px; height: auto; margin-bottom: 10px;">ARRÊTÉS</a>
+                    <a href="https://saas2.horizontalsoftware.com/H5VILLES/LACIOTAT" target="_blank" class="gradient-btn">
+                        <img src="badgeuse.png" alt="BADGEUSE" style="width: 50px; height: auto; margin-bottom: 10px;">BADGEUSE</a>
+                    <a href="https://mails.laciotat.com/owa/auth/logon.aspx?replaceCurrent=1&url=https%3a%2f%2fmails.laciotat.com%2fowa%2f" target="_blank" class="gradient-btn">
+                        <img src="email1.png" alt="EMAIL" style="width: 50px; height: auto; margin-bottom: 5px;">EMAIL</a>
+                    <a href="https://laciotat.mon-guichet.fr/console/login" target="_blank" class="gradient-btn">
+                        <img src="parking.png" alt="PARKING" style="width: 50px; height: auto; margin-bottom: 10px;">GESTION STATIONNEMENT</a>
+                </div>
+            </div>
+            
+
+            <div class="col-md-3">
+                <h2 class="section-title" style= "font-family: 'epyval'";>ACTUALITÉS</h2>
+                <div class="event-card">
+                    <div class="event-item">
+                        <div id="france24-news"></div>
+                        <script>
+                        async function fetchFrance24News() {
+                            try {
+                                const sensitiveKeywords = ['attaque', 'attaques', 'police', 'la ciotat', 'meurtre','terrorisme', 'terroriste','terrorismes', 'terroristes'];
+                                const newsContainer = document.getElementById('france24-news');
+                                
+                                // Fetch both feeds with proper error handling
+                                const [france24Response, francetvResponse] = await Promise.all([
+                                    fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.france24.com/fr/france/rss')
+                                        .then(res => res.json())
+                                        .catch(() => ({ items: [] })),
+                                    fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.francetvinfo.fr/faits-divers.rss')
+                                        .then(res => res.json())
+                                        .catch(() => ({ items: [] }))
+                                ]);
+
+                                // Combine and sort news items
+                                const allNews = [...(france24Response.items || []), ...(francetvResponse.items || [])];
+                                allNews.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+                                if (allNews.length > 0) {
+                                    newsContainer.innerHTML = allNews.slice(0, 8).map(item => {
+                                        const containsSensitiveContent = sensitiveKeywords.some(keyword => 
+                                            item.title.toLowerCase().includes(keyword.toLowerCase()) || 
+                                            (item.description && item.description.toLowerCase().includes(keyword.toLowerCase()))
+                                        );
+                                        return `
+                                            <a href="${item.link}" target="_blank" style="text-decoration: none; color: inherit;">
+                                                <div class="news-item ${containsSensitiveContent ? 'alert' : ''}">
+                                                    <p>${item.title}</p>
+                                                    <small>${new Date(item.pubDate).toLocaleDateString('fr-FR')}</small>
+                                                </div>
+                                            </a>
+                                            </div>
+                                        `;
+                                    }).join('');
+                                } else {
+                                    newsContainer.innerHTML = '<p>Aucune actualité disponible</p>';
+                                }
+                            } catch (error) {
+                                console.error('Erreur lors du chargement des actualités:', error);
+                                document.getElementById('france24-news').innerHTML = '<p>Erreur de chargement des actualités</p>';
+                            }
+                        }
+
+                        // Update France24 news every 5 minutes
+                        fetchFrance24News();
+                        setInterval(fetchFrance24News, 300000);
+                        
+                        </script>
+                    </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+        }
+
+        // Update weather using OpenWeatherMap API
+        async function updateWeather() {
+            const API_KEY = process.env.OPENWEATHERMAP_API_KEY || 'YOUR_OPENWEATHERMAP_API_KEY';
+            const CITY = 'La Ciotat';
+            const COUNTRY = 'FR';
+            
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY},${COUNTRY}&appid=${API_KEY}&units=metric&lang=fr`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.main && data.weather) {
+                    const temp = Math.round(data.main.temp);
+                    const condition = data.weather[0].description;
+                    const iconCode = data.weather[0].icon;
+                    
+                    document.getElementById('temperature').textContent = `${temp}°C`;
+                    document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}@2x.png" alt="${condition}" style="width: 120px; height: 120px;">`;
+                    document.getElementById('weather-desc').textContent = condition.charAt(0).toUpperCase() + condition.slice(1);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération de la météo:', error);
+                document.getElementById('weather-desc').textContent = 'Erreur de chargement';
+                document.getElementById('temperature').textContent = '--°C';
+                document.getElementById('weather-icon').innerHTML = '🌤️';
+            }
+        }
+
+        // Update everything when page loads
+        updateDateTime();
+        updateWeather();
+        // Update time every second
+        setInterval(updateDateTime, 1000);
+        // Update weather every 30 minutes
+        setInterval(updateWeather, 1800000);
+    </script>
+</body>
+</html>
+<style>
+    .event-card {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .event-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+    
+    .news-item {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .news-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Scrollbar styling */
+    .event-card::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .event-card::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    
+    .event-card::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+    
+    .event-card::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+    .news-item.alert {
+        color: rgb(231, 91, 91);
+        font-weight: bold;
+    }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+        }
+
+        // Update weather using OpenWeatherMap API
+        async function updateWeather() {
+            const API_KEY = process.env.OPENWEATHERMAP_API_KEY || 'YOUR_OPENWEATHERMAP_API_KEY';
+            const CITY = 'La Ciotat';
+            const COUNTRY = 'FR';
+            
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${CITY},${COUNTRY}&appid=${API_KEY}&units=metric&lang=fr`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.main && data.weather) {
+                    const temp = Math.round(data.main.temp);
+                    const condition = data.weather[0].description;
+                    const iconCode = data.weather[0].icon;
+                    
+                    document.getElementById('temperature').textContent = `${temp}°C`;
+                    document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}@2x.png" alt="${condition}" style="width: 120px; height: 120px;">`;
+                    document.getElementById('weather-desc').textContent = condition.charAt(0).toUpperCase() + condition.slice(1);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération de la météo:', error);
+                document.getElementById('weather-desc').textContent = 'Erreur de chargement';
+                document.getElementById('temperature').textContent = '--°C';
+                document.getElementById('weather-icon').innerHTML = '🌤️';
+            }
+        }
+
+        // Update everything when page loads
+        updateDateTime();
+        updateWeather();
+        // Update time every second
+        setInterval(updateDateTime, 1000);
+        // Update weather every 30 minutes
+        setInterval(updateWeather, 1800000);
+    </script>
+    <footer  style="position: fixed; bottom: 10px; left: 10px; color: white; font-size: 0.8em; ">
+        Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
+    </footer>
+</body>
+</html>
+<style>
+    .event-card {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .event-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+    
+    .news-item {
+        padding: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .news-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Scrollbar styling */
+    .event-card::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .event-card::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    
+    .event-card::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+    
+    .event-card::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
+    .news-item.alert {
+        color: rgb(231, 91, 91);
+        font-weight: bold;
+    }
+    </style>
+</style>

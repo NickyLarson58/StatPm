@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> - Rédaction de Documents</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <style>
+        body {
+            background-color: #001f3f;
+            color: white;
+            font-family: 'Arial', sans-serif;
+        }
+        .header {
+            background: linear-gradient(to right, #0056b3, #ffffff, #d32f2f);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-bottom: 4px solid #d32f2f;
+        }
+        .content-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #0056b3;
+        }
+        .ui-autocomplete {
+            background-color: rgba(0, 31, 63, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            z-index: 1000;
+        }
+        .ui-menu-item div {
+            color: white;
+            padding: 8px;
+        }
+        .ui-menu-item div.ui-state-active {
+            background-color: rgba(0, 86, 179, 0.5);
+            border: none;
+            margin: 0;
+        }
+        .btn-primary {
+            background-color: #0056b3;
+            border-color: #003366;
+        }
+        .btn-primary:hover {
+            background-color: #003366;
+            border-color: #002244;
+        }
+        #aiOutput {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 25px;
+            border-radius: 8px;
+            color: #333;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        #generatedContent {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            white-space: pre-wrap;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        #aiOutput h4 {
+            color: #0056b3;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header d-flex justify-content-between align-items-center">
+        <img src="Logo_La_Ciota.png" alt="Logo La Ciotat" style="height: 80px;">
+        <h1 style="color: #001f3f; font-family: 'Algerian', sans-serif; font-size: 2.5em; text-align: center;">RÉDACTION DE DOCUMENTS</h1>
+        <img src="Logo_La_Ciota.png" alt="Logo La Ciotat" style="height: 80px;">
+    </div>
+
+    <div class="container">
+        <div class="content-card">
+            <form id="documentForm">
+                <div class="mb-3">
+                    <label for="documentType" class="form-label">Type de Document</label>
+                    <select class="form-select" id="documentType" required>
+                        <option value="">Sélectionnez un type de document</option>
+                        <option value="rapport">Rapport</option>
+                        <option value="pv">Procès-verbal</option>
+                        <option value="mainCourante">Main courante</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="interventionTypeDiv" style="display: none;">
+                    <label for="interventionType" class="form-label">Type d'Intervention</label>
+                    <select class="form-select" id="interventionType">
+                        <option value="">Sélectionnez le type d'intervention</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="specificTypeDiv" style="display: none;">
+                    <label for="specificType" class="form-label">Type d'Infraction</label>
+                    <input type="text" class="form-control" id="specificType" placeholder="Entrez NATINF ou une infraction ">
+                </div>
+
+                <div class="mb-3">
+                    <label for="eventDescription" class="form-label">Description des Événements</label>
+                    <textarea class="form-control" id="eventDescription" rows="5" placeholder="Décrivez les événements de manière succincte..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">Générer le Document</button>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" id="exportPDF">Exporter en PDF</button>
+                        <button type="button" class="btn btn-secondary" id="sendToSystem">Envoyer au Système</button>
+                    </div>
+                </div>
+            </form>
+
+            <div id="aiOutput" style="display: none;">
+                <h4>Document Généré</h4>
+                <div id="generatedContent" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        document.getElementById('documentType').addEventListener('change', function() {
+            const interventionDiv = document.getElementById('interventionTypeDiv');
+            const specificDiv = document.getElementById('specificTypeDiv');
+            const interventionSelect = document.getElementById('interventionType');
+
+            
+            if (this.value === 'rapport' || this.value === 'pv') {
+                interventionDiv.style.display = 'block';
+                // Fetch intervention types from backend
+                fetch('/api/types-interventions')
+                .then(response => response.json())
+                .then(interventions => {
+                    const select = document.getElementById('interventionType');
+                    select.innerHTML = '<option value="">Sélectionnez un type d\'intervention</option>';
+                    
+                    // Trier les interventions
+                    const priorityItems = ['CODE DE LA ROUTE', 'MAD'];
+                    const priorityInterventions = [];
+                    const otherInterventions = [];
+                    
+                    interventions.forEach(intervention => {
+                        if (priorityItems.includes(intervention.nomInterventions)) {
+                            priorityInterventions.push(intervention);
+                        } else {
+                            otherInterventions.push(intervention);
+                        }
+                    });
+                    
+                    // Trier les autres interventions par ordre alphabétique
+                    otherInterventions.sort((a, b) => a.nomInterventions.localeCompare(b.nomInterventions));
+                    
+                    // Ajouter d'abord les éléments prioritaires
+                    priorityInterventions.forEach(intervention => {
+                        const option = document.createElement('option');
+                        option.value = [intervention.idInterventions, intervention.nomInterventions];
+                        option.textContent = intervention.nomInterventions;
+                        option.style.color = 'rgb(146, 27, 27)';
+                        option.style.fontWeight = 'bold';
+                        select.appendChild(option);
+                    });
+                    
+                    // Puis ajouter les autres éléments
+                    otherInterventions.forEach(intervention => {
+                        const option = document.createElement('option');
+                        option.value = [intervention.idInterventions, intervention.nomInterventions];
+                        option.textContent = intervention.nomInterventions;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erreur:', error));
+            } else {
+                interventionDiv.style.display = 'none';
+                specificDiv.style.display = 'none';
+            }
+        });
+
+        document.getElementById('interventionType').addEventListener('change', function() {
+            const specificDiv = document.getElementById('specificTypeDiv');
+            const specificInput = document.getElementById('specificType');
+            
+            const [id, nom] = this.value.split(',');
+            if (nom === 'MAD' || nom === 'CODE DE LA ROUTE') {
+                specificDiv.style.display = 'block';
+                $(specificInput).autocomplete({
+                    source: function(request, response) {
+                        const searchTerm = request.term.trim();
+                        if (searchTerm.length >= 1) {
+                            $.get('/api/natinf/search', { 
+                                term: /^\d+$/.test(searchTerm) ? searchTerm + '%' : searchTerm,
+                                exact: false,
+                                wholeWord: false,
+                                startsWith: false
+                            }, function(data) {
+                                response(data.map(function(item) {
+                                    var qualification = item.qualification_infraction || 'Non défini';
+                                    var natinfNum = item.natinf || 'Non défini';
+                                    return {
+                                        label: natinfNum + ' - ' + qualification,
+                                        value: natinfNum
+                                    };
+                                }));
+                            });
+                        }
+                    },
+                    minLength: 2,
+                    delay: 300,
+                    select: function(event, ui) {
+                        $(this).val(ui.item.label);
+                        return false;
+                    }
+                }).autocomplete("instance")._renderItem = function(ul, item) {
+                    var parts = item.label.split(' - ');
+                    var natinfNum = parts[0];
+                    var qualification = parts[1];
+                    var li = $('<li>');
+                    li.append($('<div>').append(
+                        $('<span>').css('color', 'rgb(238, 134, 134)').text(natinfNum),
+                        $('<span>').text(' - ' + qualification)
+                    ));
+                    return li.appendTo(ul);
+                };
+                
+                } else {
+                specificDiv.style.display = 'none';
+            }
+        });
+
+        document.getElementById('documentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const type = document.getElementById('documentType').value;
+            const titre = document.getElementById('interventionType').value || type;
+            const contenu = document.getElementById('eventDescription').value;
+            const specificType = document.getElementById('specificType').value;
+
+            fetch('/redaction/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: type,
+                    titre: titre,
+                    contenu: contenu,
+                    infractionType: specificType
+                })
+            })
+            .then(response => {
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return; // Skip if redirected
+                document.getElementById('aiOutput').style.display = 'block';
+                if (data.success) {
+                    document.getElementById('generatedContent').innerHTML = data.contenuAmeliore;
+                } else {
+                    document.getElementById('generatedContent').innerHTML = 'Erreur: ' + data.error;
+                }
+            })
+            .catch(error => {
+                document.getElementById('aiOutput').style.display = 'block';
+                document.getElementById('generatedContent').innerHTML = 'Erreur de communication avec le serveur: ' + error;
+            });
+        });
+
+        document.getElementById('exportPDF').addEventListener('click', function() {
+            // Logique d'export PDF
+        });
+
+        document.getElementById('sendToSystem').addEventListener('click', function() {
+            // Logique d'envoi au système
+        });
+    </script>
+    <footer  style="position: fixed; bottom: 10px; left: 10px; color: white; font-size: 0.8em; ">
+        Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
+    </footer>
+</body>
+</html>

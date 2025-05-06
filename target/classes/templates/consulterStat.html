@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation des Statistiques</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+</head>
+    <style>
+
+        .chartjs-render-monitor {
+            margin-top: 30px !important;
+        }
+            
+        .chartjs-legend {
+            padding: 20px 0 !important;
+        }
+
+        #statChart {
+            background: #fdfdfd;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+    </style>
+
+<body style="background: linear-gradient(to bottom, #add8e6, #003366); color: white; font-family: 'Arial', sans-serif;">
+    <div class="container mx-auto p-6">
+        
+        <!-- TIITRE -->
+         <div class="bg-blue-900 p-4 rounded-lg shadow-lg text-center">
+             <h1 class="text-2xl font-bold">CONSULTATION DES STATISTIQUES</h1>
+         </div>
+        <!-- TYPE DE STATISTIQUE -->
+        <div class="bg-blue-900 p-4 rounded-lg shadow-lg mt-6">
+             <h2 class="text-xl font-bold"> 📑 TYPE DE STATISTIQUE</h2>
+            <div class="mt-4">
+                <div class="mt-2">
+                    <label class="ml-4"><input type="radio" name="typeStat" value="interventions" checked> 🚔 Interventions</label>
+                    <label><input type="radio" name="typeStat" value="missions" > 📋 Missions</label>
+                </div>
+                
+                <div class="mt-4">
+                    <select style="color:  #003366;" id="selectTypeElements" class="p-2 rounded text-black w-full">
+                        <!-- Options seront chargées dynamiquement -->
+                    </select>
+                </div>
+                
+                <!-- Champ pour les infractions (MAD ou CODE DE LA ROUTE) -->
+                <div id="infractionInputDiv" style="display: none;" class="mt-4">
+                    <div class="address-container" style="position: relative;">
+                        <input type="text" id="infractionInput" class="p-2 rounded text-black w-full" placeholder="Rechercher une infraction...">
+                        <input type="hidden" id="infractionId">
+                        <div id="infractionSuggestions" class="infraction-suggestions" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function loadInitialData() {
+                // Charger les infos de l'agent connecté
+                fetch('/api/user-info')
+                    .then(response => response.json())
+                    .then(userInfo => {
+                        currentAgentPouvoir = userInfo.pouvoir;
+                        currentAgentBrigade = userInfo.brigade;
+                        console.log('👤 Pouvoir de l\'agent connecté :', currentAgentPouvoir);
+                        console.log('👤 Brigade de l\'agent connecté :', currentAgentBrigade);
+                        
+                        // Attendre que le DOM soit complètement chargé
+                        const waitForSelect = setInterval(() => {
+                            const selectRecherche = document.getElementById('selectRecherche');
+                            if (selectRecherche && selectRecherche.options.length > 0) {
+                                clearInterval(waitForSelect);
+                                if (currentAgentPouvoir !== "admin") {
+                                    selectRecherche.value = currentAgentBrigade;
+                                    selectRecherche.disabled = true;
+                                    console.log('selectRecherche.value mis à jour:', selectRecherche.value);
+                                }
+                            }
+                        }, 100); // Vérifier toutes les 100ms
+                    })
+                    .catch(error => console.error('Erreur chargement agents:', error));
+            }
+            loadInitialData();
+            
+            window.addEventListener("DOMContentLoaded", () => {
+                if (currentAgentPouvoir !== "admin") {
+                    const labelAgent = document.querySelector('label input[value="agent"]').parentElement;
+                    const labelAllPolice = document.querySelector('label input[value="allPolice"]').parentElement;
+
+                    if (labelAgent && labelAllPolice) {
+                        labelAgent.style.display = "none";
+                        labelAllPolice.style.display = "none";
+                    }
+                }
+            });
+
+        </script>
+
+        <!-- FILTRES PRINCIPAUX -->
+        <div style="background-color: #d9eef5; color:  #003366;;" class="bg-blue-800 p-4 rounded-lg shadow-lg mt-6">
+            <h2 class="text-xl font-bold">🔎 FILTRES</h2>
+            <div class="mt-4">
+                <div class="flex items-center">
+                    <label><input type="radio" name="typeRecherche" value="brigade" checked> Recherche par Brigade </label>
+                    <label class="ml-4"><input type="radio" name="typeRecherche" value="agent"> Recherche par Agent </label>
+                    <label class="ml-4"><input type="radio" name="typeRecherche" value="allPolice"> Police Municipale </label>
+                </div>
+                
+                <div class="mt-4">
+                    <select style="color:  #003366;" id="selectRecherche" class="p-2 rounded text-black w-full">
+                        <!-- Options seront chargées dynamiquement -->
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILTRES AVANCÉS -->
+        <div class="bg-blue-800 p-6 rounded-lg shadow-lg mt-6">
+            <h2 class="text-xl font-bold text-white">🔍 FILTRES SPATIO-TEMPOREL</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                
+                <!-- Filtre par date (Avancé) -->
+                <div class="bg-blue-900 p-4 rounded-lg shadow-md">
+                  <label class="block mb-2 text-white font-semibold">📅 Filtre par Date Avancé</label>
+                  <div class="grid grid-cols-1 gap-4">
+                    <!-- Date de début -->
+                    <div>
+                      <label for="startDate" class="block font-medium text-white">Date de début</label>
+                      <input 
+                        type="date" 
+                        id="startDate" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        style="color: black; font-weight: bold;"
+                      />
+                    </div>
+                    <!-- Date de fin -->
+                    <div>
+                      <label for="endDate" class="block font-medium text-white">Date de fin</label>
+                      <input 
+                        type="date" 
+                        id="endDate" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        style="color: black; font-weight: bold;"
+                      />
+                    </div>
+                    <!-- Raccourcis -->
+                    <div>
+                      <label for="dateShortcut" class="block font-medium text-white">Période</label>
+                      <select 
+                        id="dateShortcut" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+                        style="color: black; background-color: rgb(93, 187, 187); font-weight: bold;"
+                        onchange="applyDateShortcut()"
+                      >
+                        <option value="">Sélectionnez une période...</option>
+                        <option value="today">Aujourd'hui</option>
+                        <option value="yesterday">Hier</option>
+                        <option value="currentWeek">Semaine en cours</option>
+                        <option value="currentMonth">Mois en cours</option>
+                        <option value="currentYear">Année en cours</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <!-- Champs cachés pour compatibilité avec le code existant -->
+                  <div style="display: none;">
+                    <select id="typeDate">
+                      <option value="range" selected>range</option>
+                    </select>
+                    <div id="filtreDateJour" class="filtreDateOption">
+                      <input type="date" id="filterDateJour">
+                    </div>
+                    <div id="filtreDateMois" class="filtreDateOption">
+                      <select id="filterDateMois"></select>
+                    </div>
+                    <div id="filtreDateAnnee" class="filtreDateOption">
+                      <select id="filterDateAnnee"></select>
+                    </div>
+                  </div>
+                </div>
+        
+                <!-- Filtre par Adresse -->
+                <div class="bg-blue-900 p-4 rounded-lg shadow-md">
+                    <label class="block mb-2 text-white font-semibold">📍 Filtre par Adresse</label>
+                    <input style="color:  #003366;" type="text" id="filterAdresse" class="p-2 rounded w-full border border-gray-300 text-black" value="TOUTES LES ADRESSES" placeholder="Commencez à taper une adresse...">
+                </div>
+        
+            </div>
+        
+            <!-- Bouton Valider -->
+            <div class="mt-6 text-center">
+                <button onclick="scrollToMiddle()" id="btnValider" class="bg-green-500 px-6 py-2 rounded-lg text-white font-semibold shadow-md hover:bg-green-600">
+                    ✅ Valider
+                </button>
+            </div>
+        </div>
+        <script>
+            function scrollToMiddle() {
+                window.scrollTo({
+                    top: document.body.scrollHeight / 2,
+                    behavior: "smooth"
+                });
+            }
+        </script>
+
+        <!-- RÉSULTATS DES STATISTIQUES -->
+        <div style="background-color: #d9eef5; color: black;" class="mt-6 bg-blue-800 p-4 rounded-lg shadow-lg">
+            <h2 style="color:  #003366;" class="text-xl font-bold">📊 Résultats des Statistiques</h2>
+            <table class="w-full mt-4 bg-white text-black rounded-lg overflow-hidden">
+                <thead class="bg-blue-700 text-white">
+                    <tr>
+                        <th class="p-2">Agent / Brigade</th>
+                        <th class="p-2" id="nomTypeHeader">Nom Intervention</th>
+                        <th class="p-2">Nombre</th>
+                        <th class="p-2">Adresse</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- VISUALISATION DES STATISTIQUES -->
+        <div  class="mt-6 bg-blue-800  text-black p-6 mt-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold mb-4 text-white">📈 Visualisation des Statistiques</h2>
+            <div class="w-full flex justify-center"; style="background-color: #d9eef5">
+                <div class="w-full md:w-[700px] h-[500px]">
+                    <canvas id="statChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+          // Fonction pour obtenir la date au format DD-MM-YYYY
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        // on met a jour le calendrier en fonction du raccourci sélectionné
+        document.getElementById('dateShortcut').addEventListener('change', function() {
+            const endDateInput = document.getElementById('endDate');
+            endDateInput.min =  document.getElementById('startDate').value;
+        });
+
+        document.getElementById('endDate').addEventListener('change', function() {
+            document.getElementById("dateShortcut").selectedIndex = 0;
+        });
+
+        // si la date de fin est inférieure à la date de début, on la met à jour
+        document.getElementById('startDate').addEventListener('change', function() {
+            const endDateInput = document.getElementById('endDate');
+            endDateInput.min =  document.getElementById('startDate').value;
+            document.getElementById("dateShortcut").selectedIndex = 0;
+            if (endDateInput.value < endDateInput.min) {
+                endDateInput.value = endDateInput.min;
+            }
+        });
+
+        // Exécuter lorsque la page est chargée
+        document.addEventListener('DOMContentLoaded',  () => {
+            const today = new Date();
+            const formattedDate = formatDate(today);
+
+            // Renseigner les champs de date avec la date du jour
+            document.getElementById('startDate').value = formattedDate;
+            document.getElementById('endDate').value = formattedDate;
+            const endDateInput = document.getElementById('endDate');
+            endDateInput.min =  document.getElementById('startDate').value;
+        });
+
+        // Fonction pour appliquer le raccourci de date
+
+        // Variables pour l'autocomplétion des infractions
+        let infractions = [];
+        let infractionsLoaded = false;
+        let currentInfractionFocus = -1;
+        
+        // Fonction pour charger les infractions
+        function loadInfractions(typeIntervention) {
+            let apiUrl = typeIntervention === 'MAD' ? '/api/mad' : '/api/infractions';
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    infractions = data ?? [];
+                    infractionsLoaded = true;
+                    console.log('Data chargées:', infractions);
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des infractions:', error);
+                });
+                
+        }
+
+        // Fonction pour afficher/masquer l'encadrement du calendrier
+        function toggleCalendarVisibility() {
+        const typeDate = document.getElementById('typeDate');
+        const calendarContainer = document.querySelector('.bg-blue-800.p-1.rounded-md.shadow-sm');
+        
+        // Vérifier la valeur sélectionnée
+        if(typeDate.value === 'selectionDate') {
+            // Masquer l'encadrement du calendrier
+            calendarContainer.style.display = 'none';
+        } else {
+            // Afficher l'encadrement du calendrier
+            calendarContainer.style.display = 'block';
+        }
+
+        const today = new Date();
+    
+    // Formatage de la date en YYYY-MM-DD pour l'attribut value de l'input date
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // +1 car les mois sont indexés de 0 à 11
+    const day = String(today.getDate()).padStart(2, '0');
+    
+    const formattedDate = `${year}-${month}-${day}`;
+    
+    // Définir la date par défaut
+    document.getElementById('filterDateJour').value = formattedDate;
+    }
+
+    // Ajouter un écouteur d'événement au select
+    document.getElementById('typeDate').addEventListener('change', toggleCalendarVisibility);
+
+    // Exécuter la fonction au chargement pour définir l'état initial
+    document.addEventListener('DOMContentLoaded', function() {
+            updateTableHeader();
+        toggleCalendarVisibility();
+        
+        // Initialiser les dates par défaut
+        const today = new Date();
+        document.getElementById('startDate').value = formatDate(today);
+        document.getElementById('endDate').value = formatDate(today);
+    });
+
+        // Fonction qui vérifie la valeur sélectionnée et affiche/masque le select
+        function toggleSelectVisibility() {
+            const radioButtons = document.getElementsByName('typeRecherche');
+            const selectRecherche = document.getElementById('selectRecherche');
+            
+            // Parcourir tous les boutons radio
+            for(let radio of radioButtons) {
+                if(radio.checked && radio.value === 'allPolice') {
+                    // Si "Police Municipale" est sélectionné, masquer le select
+                    selectRecherche.style.display = 'none';
+                } else if(radio.checked && (radio.value === 'brigade' || radio.value === 'agent')) {
+                    // Si "Recherche par Brigade" ou "Recherche par Agent" est sélectionné, afficher le select
+                    selectRecherche.style.display = 'block';
+                }
+            }
+        }
+
+        // Ajouter des écouteurs d'événements aux boutons radio
+        const radioButtons = document.getElementsByName('typeRecherche');
+        for(let radio of radioButtons) {
+            radio.addEventListener('change', toggleSelectVisibility);
+        }
+        
+        // Exécuter la fonction au chargement de la page pour définir l'état initial
+        document.addEventListener('DOMContentLoaded', toggleSelectVisibility);
+        
+        // Fonction pour filtrer les infractions
+        function filterInfractions(searchText) {
+            const infractionSuggestions = document.getElementById('infractionSuggestions');
+            const infractionInput = document.getElementById('infractionInput');
+            
+            if (!searchText) {
+                infractionSuggestions.style.display = 'none';
+                return;
+            }
+            
+            const matchingInfractions = infractions.filter(infraction => 
+                infraction.libelle?.toLowerCase().includes(searchText.toLowerCase()) ||
+                infraction.id_infraction?.toString().includes(searchText) ||
+                infraction.id_mad?.toString().includes(searchText) ||
+                infraction.natinf?.toString().includes(searchText)
+            ).slice(0, 5);
+
+            infractionSuggestions.innerHTML = '';
+
+            if (matchingInfractions.length > 0) {
+                matchingInfractions.forEach((infraction) => {
+                    const div = document.createElement('div');
+                    const infractionName = infraction.libelle;
+                    const natinfText = infraction.natinf ? `NATINF ${infraction.natinf} - ` : '';
+                    const infractionId = infraction.id_mad ?? infraction.id_infraction;
+                    
+                    div.innerHTML = `<span style="color: #8B0000; "><strong>${natinfText}</strong></span>${infractionName}`;
+                    div.className = 'address-suggestion';
+                    
+                    div.addEventListener('click', () => {
+                        infractionInput.value = natinfText + infractionName;
+                        infractionSuggestions.style.display = 'none';
+                        document.getElementById('infractionId').value = infractionId;
+                    });
+
+                    infractionSuggestions.appendChild(div);
+                });
+                infractionSuggestions.style.display = 'block';
+            } else {
+                infractionSuggestions.style.display = 'none';
+            }
+        }
+        
+        // Initialisation des éléments au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTableHeader();
+            // Initialisation du sélecteur de mission/intervention
+            updateTypeElements();
+            
+            // Initialisation du sélecteur de recherche (brigade/agent)
+            updateRechercheSelector();
+            
+            // Générer les années pour le filtre
+            const selectAnnee = document.getElementById('filterDateAnnee');
+            for (let annee = 2025; annee <= 2045; annee++) {
+                const option = document.createElement('option');
+                option.value = annee;
+                option.textContent = annee;
+                selectAnnee.appendChild(option);
+            }
+            
+            // Configuration de l'autocomplétion des infractions
+            const infractionInput = document.getElementById('infractionInput');
+            const infractionSuggestions = document.getElementById('infractionSuggestions');
+            
+            // Gestionnaire d'événement pour la saisie dans le champ infraction
+            infractionInput.addEventListener('input', (e) => {
+                filterInfractions(e.target.value);
+            });
+            
+            // Gestionnaire d'événement pour le focus sur le champ infraction
+            infractionInput.addEventListener('focus', () => {
+                if (infractionInput.value) {
+                    filterInfractions(infractionInput.value);
+                }
+            });
+            
+            // Gestionnaire pour clic en dehors des suggestions d'infractions
+            document.addEventListener('click', (e) => {
+                if (!infractionInput.contains(e.target) && !infractionSuggestions.contains(e.target)) {
+                    infractionSuggestions.style.display = 'none';
+                }
+            });
+            
+            // Gestionnaire d'événement pour la touche "Entrée" dans le champ infractionInput
+            infractionInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Empêcher la soumission du formulaire
+                    
+                    const selectTypeElements = document.getElementById('selectTypeElements');
+                    
+                    if (selectTypeElements.value === 'MAD' && infractionInput.value.trim() === '') {
+                        // Si "MAD" est sélectionné et le champ est vide, afficher toutes les suggestions
+                        infractionSuggestions.innerHTML = '';
+                        infractions.forEach((infraction) => {
+                            const div = document.createElement('div');
+                            const infractionName = infraction.libelle;
+                            const natinfText = infraction.natinf ? `NATINF ${infraction.natinf} - ` : '';
+                            
+                            div.innerHTML = `<span style="color: #8B0000;"><strong>${natinfText}</strong></span>${infractionName}`;
+                            div.className = 'address-suggestion';
+                            
+                            div.addEventListener('click', () => {
+                                infractionInput.value = natinfText + infractionName;
+                                infractionSuggestions.style.display = 'none';
+                            });
+
+                            infractionSuggestions.appendChild(div);
+                        });
+                        infractionSuggestions.style.display = 'block';
+                    } else if (currentInfractionFocus > -1) {
+                        const suggestions = infractionSuggestions.getElementsByClassName('address-suggestion');
+                        if (suggestions.length > 0 && suggestions[currentInfractionFocus]) {
+                            infractionInput.value = suggestions[currentInfractionFocus].textContent;
+                            infractionSuggestions.style.display = 'none';
+                            currentInfractionFocus = -1;
+                        }
+                    } else {
+                        infractionSuggestions.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Ajouter un événement de changement au sélecteur de type d'éléments
+            const selectTypeElements = document.getElementById('selectTypeElements');
+            selectTypeElements.addEventListener('change', function() {
+                const infractionInputDiv = document.getElementById('infractionInputDiv');
+                const infractionSuggestions = document.getElementById('infractionSuggestions');
+                
+                // Réinitialiser le champ infraction
+                document.getElementById('infractionInput').value = '';
+                infractionSuggestions.innerHTML = '';
+                
+                // Gérer l'affichage du champ infraction
+                if (this.value === 'MAD' || this.value === 'CODE DE LA ROUTE') {
+                    infractionInputDiv.style.display = 'block';
+                    loadInfractions(this.value);
+                } else {
+                    infractionInputDiv.style.display = 'none';
+                    infractionSuggestions.style.display = 'none';
+                }
+            })
+            
+            // Configuration de l'autocomplétion d'adresse
+            const addressInput = document.getElementById('filterAdresse');
+            const suggestionsList = document.createElement('div');
+            suggestionsList.id = 'addressSuggestions';
+            suggestionsList.className = 'address-suggestions';
+            
+            // Create a container div for the address input and suggestions
+            const addressContainer = document.createElement('div');
+            addressContainer.className = 'address-container';
+            addressContainer.style.position = 'relative';
+            
+            // Replace the input with the container and move the input inside it
+            addressInput.parentNode.replaceChild(addressContainer, addressInput);
+            addressContainer.appendChild(addressInput);
+            addressContainer.appendChild(suggestionsList);
+
+            let addresses = [];
+            let addressesLoaded = false;
+            let currentFocus = -1;
+
+            // Fonction pour charger les adresses depuis l'API
+            function loadAddresses() {
+
+                addressInput.select()
+                if (addressesLoaded) return;
+
+                fetch('/api/adresses')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        addresses = data;
+                        addressesLoaded = true;
+                        filterAddresses(addressInput.value.toLowerCase());
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+            }
+
+            // Fonction pour filtrer et afficher les adresses
+            function filterAddresses(val) {
+                suggestionsList.innerHTML = '';
+
+                if (!val) {
+                    suggestionsList.style.display = 'none';
+                    return;
+                }
+
+                const matchingAddresses = addresses.filter(address =>
+                    address.nomadresse.toLowerCase().includes(val.toLowerCase())
+                ).slice(0, 5); // Limiter à 5 suggestions
+
+                if (matchingAddresses.length > 0) {
+                    suggestionsList.style.display = 'block';
+                    matchingAddresses.forEach((address, index) => {
+                        const div = document.createElement('div');
+                        div.innerHTML = address.nomadresse;
+                        div.className = 'address-suggestion';
+                        div.setAttribute('data-index', index);
+                        div.setAttribute('data-id', address.idadresse);
+
+                        div.addEventListener('click', function() {
+                            addressInput.value = address.nomadresse;
+                            suggestionsList.style.display = 'none';
+                            currentFocus = -1;
+                        });
+
+                        suggestionsList.appendChild(div);
+                    });
+                } else {
+                    suggestionsList.style.display = 'none';
+                }
+            }
+
+            // Charger les adresses uniquement lors du focus sur le champ
+            addressInput.addEventListener('focus', function() {
+                if (!addressesLoaded) {
+                    loadAddresses();
+                }
+            });
+
+            // Gestionnaire d'événement pour la saisie
+            addressInput.addEventListener('input', function() {
+                filterAddresses(this.value.toLowerCase());
+            });
+
+            // Gestionnaire d'événement pour la touche "Entrée"
+            addressInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Empêcher la soumission du formulaire
+
+                    if (currentFocus > -1) {
+                        const suggestions = suggestionsList.getElementsByClassName('address-suggestion');
+                        if (suggestions.length > 0 && suggestions[currentFocus]) {
+                            addressInput.value = suggestions[currentFocus].textContent;
+                            suggestionsList.style.display = 'none';
+                            currentFocus = -1;
+                        }
+                    }
+                }
+            });
+
+            // Add styles for address suggestions
+            const style = document.createElement('style');
+            style.textContent = `
+                .address-container {
+                    position: relative;
+                    width: 100%;
+                }
+                .address-suggestions, .infraction-suggestions {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: rgb(93, 187, 187);
+                    border: 1px solid #ddd;
+                    border-top: none;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    display: none;
+                }
+                .address-suggestion {
+                    padding: 8px;
+                    cursor: pointer;
+                    color: black;
+                }
+                .address-suggestion:hover {
+                    background-color: #f0f0f0;
+                }
+                .infraction-suggestion {
+                    padding: 8px;
+                    cursor: pointer;
+                    color: black;
+                }
+                .infraction-suggestion:hover {
+                    background-color: #f0f0f0;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Événement pour changer le type de filtre de date
+            document.getElementById('typeDate').addEventListener('change', function() {
+                const value = this.value;
+                document.querySelectorAll('.filtreDateOption').forEach(el => el.classList.add('hidden'));
+                document.getElementById('filtreDateJour').classList.toggle('hidden', value !== 'jour');
+                document.getElementById('filtreDateMois').classList.toggle('hidden', value !== 'mois');
+                document.getElementById('filtreDateAnnee').classList.toggle('hidden', value !== 'annee');
+            });
+            
+            // Initialisation du graphique
+            initChart();
+        });
+
+        // Mise à jour du sélecteur de type d'éléments (missions/interventions)
+        function updateTypeElements() {
+            const typeStat = document.querySelector('input[name="typeStat"]:checked').value;
+            const selectTypeElements = document.getElementById('selectTypeElements');
+            const infractionInputDiv = document.getElementById('infractionInputDiv');
+            
+            selectTypeElements.innerHTML = '';
+            
+            // Option par défaut
+            const defaultOption = document.createElement('option');
+            defaultOption.value = 'all';
+            defaultOption.textContent = typeStat === 'missions' ? 'TOUTES LES MISSIONS' : 'TOUTES LES INTERVENTIONS';
+            selectTypeElements.appendChild(defaultOption);
+            
+            // Options spécifiques
+            const endpoint = typeStat === 'missions' ? '/api/missions' : '/api/interventions';
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    // Trier les données
+                    data.sort((a, b) => {
+                        const itemA = typeStat === 'missions' ? a.nomMission : a.nomInterventions;
+                        const itemB = typeStat === 'missions' ? b.nomMission : b.nomInterventions;
+                        
+                        // Prioriser CODE DE LA ROUTE et MAD
+                        const priority = {'CODE DE LA ROUTE': 1, 'MAD': 2};
+                        const aPriority = priority[itemA] || 3;
+                        const bPriority = priority[itemB] || 3;
+                        
+                        if (aPriority !== bPriority) {
+                            return aPriority - bPriority;
+                        }
+                        return itemA.localeCompare(itemB);
+                    });
+
+                    data.forEach(item => {
+                        const optionEl = document.createElement('option');
+                        const itemValue = typeStat === 'missions' ? item.nomMission : item.nomInterventions;
+                        optionEl.value = itemValue;
+                        optionEl.textContent = itemValue;
+                        
+                        // Appliquer le style rouge pour MAD et CODE DE LA ROUTE
+                        if (itemValue === 'MAD' || itemValue === 'CODE DE LA ROUTE') {
+                            optionEl.style.color = 'rgb(146, 27, 27)';
+                            optionEl.style.fontWeight = 'bold';
+                        }
+                        
+                        selectTypeElements.appendChild(optionEl);
+                    });
+                    
+                    // Masquer le champ d'infraction par défaut
+                    infractionInputDiv.style.display = 'none';
+                })
+                .catch(error => console.error('Erreur lors du chargement:', error));
+        }
+
+        // Mise à jour du sélecteur de recherche (brigade/agent)
+        function updateRechercheSelector() {
+            const typeRecherche = document.querySelector('input[name="typeRecherche"]:checked').value;
+            const selectRecherche = document.getElementById('selectRecherche');
+            selectRecherche.innerHTML = '';
+            
+            // Options
+            const apiEndpoint = typeRecherche === 'brigade' ? '/api/brigades' : '/api/agents';
+            
+            fetch(apiEndpoint)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const optionEl = document.createElement('option');
+                        optionEl.value = typeRecherche === 'brigade' ? item.nomBrigade : item;
+                        optionEl.textContent = optionEl.value;
+
+
+                        selectRecherche.appendChild(optionEl);
+            });
+        });
+    }
+    
+        // Initialisation du graphique
+        function initChart() {
+        const ctx = document.getElementById('statChart').getContext('2d');
+        
+        // Création d'un dégradé pour les barres
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(54, 162, 235, 0.8)');
+        gradient.addColorStop(1, 'rgba(54, 162, 235, 0.2)');
+
+        // Configuration du graphique
+        window.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Nombre d'interventions",
+                    data: [],
+                    backgroundColor: gradient,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    fill: true,
+                }, {
+                    label: "Total Police Municipale",
+                    data: [],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hidden: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                barPercentage: 0.7,
+                categoryPercentage: 0.7,
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart',
+                    animateRotate: true,
+                    animateScale: true
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#003366',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            padding: 20,
+                            usePointStyle: true, // Style plus élégant
+                            pointStyle: 'circle' // Forme ronde pour les couleurs
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 51, 102, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        bodyFont: {
+                            size: 14
+                        },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 51, 102, 0.1)',
+                            drawTicks: false,
+                            display: true,
+                            drawOnChartArea: true
+                        },
+                        ticks: {
+                            color: '#003366',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            padding: 10
+                        },
+                        title: {
+                            display: true,
+                            text: 'Nombre',
+                            color: '#003366',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#003366',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            padding: 10
+                        },
+                        title: {
+                            display: true,
+                            color: '#003366',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    intersect: false
+                }
+            }
+        });
+    }
+
+        // Mise à jour du graphique
+        function updateChart(data) {
+            if (!data || data.length === 0) {
+                window.chart.data.labels = [];
+                window.chart.data.datasets[0].data = [];
+                window.chart.data.datasets[1].data = [];
+                window.chart.update();
+                return;
+            }
+            // Regrouper les données par type d'intervention ou mission
+            const groupedData = {};
+            const typeStat = document.querySelector('input[name="typeStat"]:checked').value;
+            const typeRecherche = document.querySelector('input[name="typeRecherche"]:checked').value;
+
+            data.forEach(item => {
+                const selectedTypeStat = document.querySelector('input[name="typeStat"]:checked');
+                // Utiliser le bon champ selon le type de statistique (mission ou intervention)
+                const key = selectedTypeStat.value;
+                if (key) {
+                    if (!groupedData[key]) {
+                        groupedData[key] = 0;
+                    }
+                    groupedData[key] += item.nombre || 0;
+                }
+            });
+            
+            const labels = Object.keys(groupedData);
+            const values = Object.values(groupedData);
+            
+            // Mettre à jour le graphique
+            window.chart.data.labels = labels;
+            window.chart.data.datasets[0].data = values;
+            window.chart.data.datasets[0].label = typeStat === 'missions' ? "Nombre de missions": "Nombre d'intervention";
+            
+            // Afficher ou masquer le dataset des statistiques globales
+            window.chart.data.datasets[1].hidden = !(typeRecherche === 'brigade' || typeRecherche === 'agent');
+            
+            if (typeRecherche === 'brigade' || typeRecherche === 'agent') {
+                // Créer les paramètres pour la requête globale
+                const params = new URLSearchParams();
+                params.append('isMission', typeStat === 'missions');
+                
+                // Ajouter les dates si elles existent
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                
+                // Récupérer les statistiques globales
+                fetch(`/api/statistiques?${params.toString()}`)
+                    .then(response => response.json())
+                    .then(globalData => {
+                        const globalGroupedData = {};
+                        globalData.forEach(item => {
+                            const key = typeStat;
+                            if (!globalGroupedData[key]) {
+                                globalGroupedData[key] = 0;
+                            }
+                            globalGroupedData[key] += item.nombre || 0;
+                        });
+                        
+                        window.chart.data.datasets[1].data = labels.map(label => globalGroupedData[typeStat] || 0);
+                        window.chart.update();
+                    })
+                    .catch(error => console.error('Erreur lors de la récupération des statistiques globales:', error));
+            }
+            
+            window.chart.update();
+        }
+
+        // Fonction pour mettre à jour l'en-tête du tableau
+        function updateTableHeader() {
+            const typeStat = document.querySelector('input[name="typeStat"]:checked').value;
+            const header = document.getElementById('nomTypeHeader');
+            header.textContent = typeStat === 'missions' ? 'Nom Mission' : 'Nom Intervention';
+        }
+
+        // Événements pour changer de type de statistique
+        document.querySelectorAll('input[name="typeStat"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                updateTypeElements();
+                updateTableHeader();
+            });
+        });
+
+        // Événements pour changer le type de recherche
+        document.querySelectorAll('input[name="typeRecherche"]').forEach(radio => {
+            radio.addEventListener('change', updateRechercheSelector);
+        });
+
+        // Événement de validation des filtres
+        document.getElementById('btnValider').addEventListener('click', function() {
+            
+            // Récupération des valeurs des filtres
+            const typeStat = document.querySelector('input[name="typeStat"]:checked').value;
+            const typeElement = document.getElementById('selectTypeElements').value;
+            const typeRecherche = document.querySelector('input[name="typeRecherche"]:checked').value;
+            const rechercheValue = document.getElementById('selectRecherche').value;
+            
+            // Récupération des filtres avancés de date
+            const typeDate = document.getElementById('typeDate').value;
+            
+            // Récupération des dates de début et de fin pour le nouveau filtre
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // Récupération de l'adresse sélectionnée
+            const adresseInput = document.getElementById('filterAdresse');
+            const adresseId = adresseInput.value !== 'TOUTES LES ADRESSES' ? 
+                document.querySelector(`#addressSuggestions div[data-id]`)?.getAttribute('data-id') : null;
+            
+            // Récupération de l'infraction sélectionnée si applicable
+            const infractionId = document.getElementById('infractionId')?.value || null;
+            
+            // Construction des paramètres pour l'API
+            const params = new URLSearchParams();
+            
+            // Paramètre isMission (true pour missions, false pour interventions)
+            params.append('isMission', typeStat === 'missions');
+            
+            // Paramètre brigade (peut être null)
+            if (typeRecherche === 'brigade' && rechercheValue) {
+                params.append('brigade', rechercheValue);
+            }
+            
+            // Paramètre agentId (peut être null)
+            if (typeRecherche === 'agent' && rechercheValue) {
+                // Récupérer l'ID de l'agent à partir de son nom
+                const agentId = rechercheValue.split('-').pop()?.trim() ?? '';
+                params.append('agentId', agentId);
+            }
+            
+            // Paramètres de date
+            if (startDate) {
+                params.append('startDate', startDate);
+            }
+            if (endDate) {
+                params.append('endDate', endDate);
+            }
+            
+            // Paramètre adresseId (peut être null)
+            if (adresseId) {
+                params.append('adresseId', adresseId);
+            }
+            
+            // Appel à l'API
+            fetch(`/api/statistiques?${params.toString()}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la récupération des statistiques');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mise à jour des résultats
+                    updateResults(data, typeStat, typeRecherche);
+                    
+                    // Mise à jour du graphique
+                    updateChart(data);
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la récupération des statistiques.');
+                });
+                console.log(`/api/statistiques?${params.toString()}`);
+        });
+
+        // Fonction pour appliquer les raccourcis de date
+        function applyDateShortcut() {
+            const shortcut = document.getElementById("dateShortcut").value;
+            const startDateField = document.getElementById("startDate");
+            const endDateField = document.getElementById("endDate");
+            const today = new Date();
+
+            switch (shortcut) {
+                case "today":
+                    startDateField.value = formatDate(today);
+                    endDateField.value = formatDate(today);
+                    break;
+                case "yesterday":
+                    const yesterday = new Date();
+                    yesterday.setDate(today.getDate() - 1);
+                    startDateField.value = formatDate(yesterday);
+                    endDateField.value = formatDate(yesterday);
+                    break;
+                case "currentWeek":
+                    const firstDayOfWeek = new Date(today);
+                    firstDayOfWeek.setDate(today.getDate() - today.getDay());
+                    startDateField.value = formatDate(firstDayOfWeek);
+                    endDateField.value = formatDate(today);
+                    break;
+                case "currentMonth":
+                    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    startDateField.value = formatDate(firstDayOfMonth);
+                    endDateField.value = formatDate(today);
+                    break;
+                case "currentYear":
+                    const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+                    startDateField.value = formatDate(firstDayOfYear);
+                    endDateField.value = formatDate(today);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Fonction pour formater une date en YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Fonction pour mettre à jour les résultats dans le tableau
+        function updateResults(data, typeStat, typeRecherche) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                const row = `<tr>
+                    <td colspan="5" class="p-4 text-center" style="color: red;font-weight: bold;">Aucun résultat trouvé</td>
+                </tr>`;
+                tableBody.innerHTML = row;
+                return;
+            }
+            
+            data.forEach(item => {
+                // Adapter en fonction de la structure de données retournée par l'API
+                const entityName = typeRecherche === 'brigade' ? item.brigade : typeRecherche === 'agent'? item.agents[0].nomAgent + " " + item.agents[0].prenomAgent : "Police Municipale";
+                const interventionName = item.nomIntervention;
+                const row = `<tr class="text-center">
+                    <td class="p-2">${entityName || 'N/A'}</td>
+                    <td class="p-2">${interventionName || 'N/A'}</td>
+                    <td class="p-2">${item.nombre || 0}</td>
+                    <td class="p-2">${item.adresse.nomadresse || 'N/A'}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+        }
+    </script>
+    <footer  style="position: fixed; bottom: 10px; left: 10px; color: white; font-size: 0.8em; ">
+        Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
+    </footer>
+</body>
+</html>
