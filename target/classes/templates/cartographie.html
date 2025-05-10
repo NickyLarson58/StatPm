@@ -225,6 +225,17 @@
             window.location.href = '/api/signalements/export';
         }
 
+        function  loadInitialData() {
+            // Charger l'imatricul de l'agent connecté
+            fetch('/api/user-info')
+            .then(response => response.json())
+            .then(userInfo => {
+                connectedAgentId = userInfo.matricule;
+            })
+            .catch(error => console.error('Erreur chargement agents:', error));
+        }
+        loadInitialData();
+
         document.getElementById('form-signalement').addEventListener('submit', async function(e) {
             e.preventDefault();
             if (!selectedLocation) {
@@ -235,9 +246,9 @@
             const formData = {
                 type: document.getElementById('type').value,
                 description: document.getElementById('description').value,
-                latitude: selectedLocation.lat(),
-                longitude: selectedLocation.lng(),
-                idUtilisateur: 1 // À remplacer par l'ID de l'utilisateur connecté
+                latitude: selectedLocation.lat,
+                longitude: selectedLocation.lng,
+                idUtilisateur: connectedAgentId
             };
 
             try {
