@@ -9,13 +9,16 @@ C:\StatPm\src\main\java\src\model\StatMission.java
 C:\StatPm\src\main\java\src\repository\AdressesRepository.java
 C:\StatPm\src\main\java\src\controller\StatMissionController.java
 C:\StatPm\src\main\java\src\repository\InfractionRepository.java
+C:\StatPm\src\main\java\src\repository\TypeSignalementRepository.java
 C:\StatPm\src\main\java\src\service\LoggingService.java
 C:\StatPm\src\main\java\src\controller\AdresseController.java
 C:\StatPm\src\main\java\src\model\dto\StatistiqueDTO.java
+C:\StatPm\src\main\java\src\model\TypeSignalement.java
 C:\StatPm\src\main\java\src\controller\InterventionsController.java
 C:\StatPm\src\main\java\src\model\Interventions.java
 C:\StatPm\src\main\java\src\config\DatabaseConfig.java
 C:\StatPm\src\main\java\src\controller\NatinfController.java
+C:\StatPm\src\main\java\src\controller\TypeSignalementController.java
 C:\StatPm\src\main\java\SQL\ConnexionSql.java
 C:\StatPm\src\main\java\src\service\StatMissionService.java
 C:\StatPm\src\main\java\src\controller\TravauxController.java
@@ -29,8 +32,10 @@ C:\StatPm\src\main\java\src\controller\ConsulterStatController.java
 C:\StatPm\src\main\java\src\controller\RedactionController.java
 C:\StatPm\src\main\java\src\controller\ConfigController.java
 C:\StatPm\src\main\java\src\repository\AgentsRepository.java
+C:\StatPm\src\main\java\src\controller\CartographieController.java
 C:\StatPm\src\main\java\src\model\Equipage.java
 C:\StatPm\src\main\java\src\controller\StatInterventionController.java
+C:\StatPm\src\main\java\src\model\Signalement.java
 C:\StatPm\src\main\java\src\service\AuthenticationService.java
 C:\StatPm\src\main\java\src\controller\LoginController.java
 C:\StatPm\src\main\java\src\service\impl\InterventionServiceImpl.java
@@ -55,4 +60,5 @@ C:\StatPm\src\main\java\src\model\dto\CreatedStatMissionDTO.java
 C:\StatPm\src\main\java\src\service\impl\StatisticsServiceImpl.java
 C:\StatPm\src\main\java\src\service\BrigadeService.java
 C:\StatPm\src\main\java\src\repository\BrigadeRepository.java
+C:\StatPm\src\main\java\src\repository\SignalementRepository.java
 C:\StatPm\src\main\java\src\controller\MissionsController.java
