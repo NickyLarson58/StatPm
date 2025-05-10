@@ -451,6 +451,14 @@ function validerToutesInterventions() {
         return;
     }
 
+    // Fonction pour formater la date au format JJ.MM.AAAA
+    function formatDate(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
     // Récupérer toutes les données des interventions
     const interventionsData = Array.from(interventions).map(row => {
         const cells = row.getElementsByTagName('td');
@@ -521,10 +529,26 @@ function validerToutesInterventions() {
         loadingMessage.remove();
         
         if (data.success) {
+            // Créer la sauvegarde de la base de données
+            const currentDate = new Date();
+            const formattedDate = formatDate(currentDate);
+            const backupFileName = `SauvegardeBddStatWeb-${formattedDate}`;
+
+            fetch(`/api/backup-database?fileName=${backupFileName}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(backupData => {
+                console.log('Sauvegarde de la base de données effectuée:', backupData);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la sauvegarde de la base de données:', error);
+            });
+
             // Afficher un message de succès
             const successMessage = document.createElement('div');
             successMessage.className = 'alert alert-success';
-            successMessage.textContent = data.message;
+            successMessage.textContent = data.message + ' - Sauvegarde de la base de données effectuée.';
             document.querySelector('.recap-section').prepend(successMessage);
             
             // Vider le tableau après validation
