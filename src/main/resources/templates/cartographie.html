@@ -283,6 +283,7 @@
                     const option = document.createElement('option');
                     option.value = type.id;
                     option.textContent = type.libelle;
+                    option.title = type.description; // Ajouter l'infobulle avec la description
                     selectType.appendChild(option);
                 });
             } catch (error) {
