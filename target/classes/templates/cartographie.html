@@ -135,6 +135,34 @@
         let map;
         let markers = [];
         let selectedLocation = null;
+        
+        // Définition des icônes personnalisées pour chaque type de signalement
+        const typeIcons = {
+            'DÊPOTS': L.icon({
+                iconUrl: 'depots.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            }),
+            'AFFICHAGES': L.icon({
+                iconUrl: 'affichages.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            }),
+            'TAGS': L.icon({
+                iconUrl: 'tags.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            }),
+            'AUTRES': L.icon({
+                iconUrl: 'autres.png',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
+            })
+        };
 
         function initMap() {
             map = L.map('map').setView([43.1741, 5.6067], 14); // La Ciotat
@@ -156,7 +184,10 @@
         function placeMarker(location) {
             markers.forEach(m => map.removeLayer(m));
             markers = [];
-            let marker = L.marker([location.lat, location.lng]).addTo(map);
+            const selectedType = document.getElementById('type');
+            const typeText = selectedType.options[selectedType.selectedIndex].textContent;
+            const icon = typeIcons[typeText] || L.Icon.Default;
+            let marker = L.marker([location.lat, location.lng], {icon: icon}).addTo(map);
             markers.push(marker);
         }
 
@@ -193,9 +224,11 @@
                 `;
                 container.appendChild(div);
 
-                // Ajouter sur la carte
+                // Ajouter sur la carte avec l'icône correspondante
+                const icon = typeIcons[s.type] || L.Icon.Default;
                 const marker = L.marker([s.latitude, s.longitude], {
-                    title: s.type
+                    title: s.type,
+                    icon: icon
                 }).addTo(map);
                 markers.push(marker);
             });
