@@ -1720,3 +1720,13 @@
 2025-05-11 09:39:47 [http-nio-8082-exec-9] INFO  src.service.LoggingService - [2025-05-11 09:39:47] Type: AUTH, Matricule: 56020, Location: ./documents/destination - SQL results - nom: BOUZEBOUDJA, prenom: Mansour, brigade: ENCADREMENT
 2025-05-11 09:39:47 [http-nio-8082-exec-9] INFO  src.service.LoggingService - [2025-05-11 09:39:47] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Agent details retrieved successfully
 2025-05-11 09:39:47 [http-nio-8082-exec-9] DEBUG src.service.LoggingService - [2025-05-11 09:39:47] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Récupération du pouvoir: admin
+2025-05-11 09:50:45 [http-nio-8082-exec-6] INFO  src.service.LoggingService - [2025-05-11 09:50:45] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Connexion réussie
+2025-05-11 09:50:45 [http-nio-8082-exec-6] INFO  src.service.LoggingService - [2025-05-11 09:50:45] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Executing SQL query for agent details
+2025-05-11 09:50:45 [http-nio-8082-exec-6] INFO  src.service.LoggingService - [2025-05-11 09:50:45] Type: AUTH, Matricule: 56020, Location: ./documents/destination - SQL results - nom: BOUZEBOUDJA, prenom: Mansour, brigade: ENCADREMENT
+2025-05-11 09:50:45 [http-nio-8082-exec-6] INFO  src.service.LoggingService - [2025-05-11 09:50:45] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Agent details retrieved successfully
+2025-05-11 09:50:45 [http-nio-8082-exec-6] DEBUG src.service.LoggingService - [2025-05-11 09:50:45] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Récupération du pouvoir: admin
+2025-05-11 10:02:23 [http-nio-8082-exec-8] INFO  src.service.LoggingService - [2025-05-11 10:02:23] Type: AUTH, Matricule: 1428, Location: ./documents/destination - Connexion réussie
+2025-05-11 10:02:23 [http-nio-8082-exec-8] INFO  src.service.LoggingService - [2025-05-11 10:02:23] Type: AUTH, Matricule: 1428, Location: ./documents/destination - Executing SQL query for agent details
+2025-05-11 10:02:23 [http-nio-8082-exec-8] INFO  src.service.LoggingService - [2025-05-11 10:02:23] Type: AUTH, Matricule: 1428, Location: ./documents/destination - SQL results - nom: BOUZEBOUDJA, prenom: Hamid, brigade: CTV 2
+2025-05-11 10:02:23 [http-nio-8082-exec-8] INFO  src.service.LoggingService - [2025-05-11 10:02:23] Type: AUTH, Matricule: 1428, Location: ./documents/destination - Agent details retrieved successfully
+2025-05-11 10:02:23 [http-nio-8082-exec-8] DEBUG src.service.LoggingService - [2025-05-11 10:02:23] Type: AUTH, Matricule: 1428, Location: ./documents/destination - Récupération du pouvoir: userPm

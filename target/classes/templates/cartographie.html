@@ -6,7 +6,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <style>
         body {
             background-color: #001f3f;
@@ -224,9 +227,64 @@
                     <strong>${typeLibelle}</strong><br>
                     ${s.description}<br>
                     <small>Statut: ${s.statut}</small><br>
-                    <button onclick="modererSignalement(${s.id}, 'valide')" class="tool-button btn-sm">Valider</button>
-                    <button onclick="modererSignalement(${s.id}, 'rejete')" class="tool-button btn-sm">Rejeter</button>
+                    <button onclick="consulterSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-eye"></i> Consulter</button>
+                    <button onclick="supprimerSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-trash"></i> Supprimer</button>
                 `;
+
+                // Ajouter la modal pour chaque signalement
+                const modalHtml = `
+                    <div class="modal fade" id="modalSignalement${s.id}" tabindex="-1" aria-labelledby="modalSignalementLabel${s.id}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content bg-dark text-white">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalSignalementLabel${s.id}">Détails du Signalement</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="formSignalement${s.id}">
+                                        <div class="mb-3">
+                                            <label class="form-label">Type</label>
+                                            <input type="text" class="form-control" value="${typeLibelle}" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <textarea class="form-control" id="description${s.id}">${s.description}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Date de création</label>
+                                            <input type="text" class="form-control" value="${s.dateCreation}" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Utilisateur</label>
+                                            <input type="text" class="form-control" value="${s.idUtilisateur}" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Brigade</label>
+                                            <input type="text" class="form-control" value="${s.brigade}" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Photos</label>
+                                            <div id="photos${s.id}" class="d-flex flex-wrap gap-2">
+                                                ${s.photos ? s.photos.map(photo => `
+                                                    <img src="${photo}" class="img-thumbnail" style="max-width: 200px;">
+                                                `).join('') : 'Aucune photo'}
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Nouvelles photos</label>
+                                            <input type="file" class="form-control" id="newPhotos${s.id}" multiple accept="image/*">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                    <button type="button" class="btn btn-primary" onclick="sauvegarderModifications(${s.id})">Sauvegarder</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
                 container.appendChild(div);
 
                 // Utiliser le type de signalement pour sélectionner l'icône appropriée
@@ -239,14 +297,53 @@
             });
         }
 
-        async function modererSignalement(id, statut) {
+        async function consulterSignalement(id) {
+            const modal = new bootstrap.Modal(document.getElementById(`modalSignalement${id}`));
+            modal.show();
+        }
+
+        async function supprimerSignalement(id) {
+            Swal.fire({
+                title: 'Travaux en cours',
+                text: 'La fonctionnalité de suppression est en cours de développement.',
+                icon: 'info',
+                confirmButtonText: 'OK'
+            });
+        }
+
+        async function sauvegarderModifications(id) {
             try {
-                await fetch(`/api/signalements/${id}/moderation?statut=${statut}`, {
-                    method: 'PUT'
+                const formData = new FormData();
+                formData.append('description', document.getElementById(`description${id}`).value);
+                
+                const photosInput = document.getElementById(`newPhotos${id}`);
+                if (photosInput.files.length > 0) {
+                    for (let photo of photosInput.files) {
+                        formData.append('photos', photo);
+                    }
+                }
+
+                await fetch(`/api/signalements/${id}`, {
+                    method: 'PUT',
+                    body: formData
                 });
+
+                Swal.fire({
+                    title: 'Succès',
+                    text: 'Les modifications ont été enregistrées avec succès.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+
                 chargerSignalements();
             } catch (error) {
-                console.error('Erreur lors de la modération:', error);
+                console.error('Erreur lors de la sauvegarde:', error);
+                Swal.fire({
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de la sauvegarde des modifications.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         }
 
