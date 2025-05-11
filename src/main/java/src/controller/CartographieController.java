@@ -78,6 +78,40 @@ public class CartographieController {
         }
     }
 
+    @PutMapping("/api/signalements/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateSignalement(@PathVariable Long id, @RequestParam(required = false) String description, @RequestParam(required = false) MultipartFile[] photos) {
+        try {
+            Signalement signalement = signalementRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Le signalement demandé n'existe pas ou a été supprimé."));
+
+            if (description != null) {
+                signalement.setDescription(description);
+            }
+
+            if (photos != null && photos.length > 0) {
+                StringBuilder photoPaths = new StringBuilder();
+                for (MultipartFile file : photos) {
+                    String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                    Path uploadPath = Paths.get(UPLOAD_DIR);
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+                    Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
+                    photoPaths.append(fileName).append(";");
+                }
+                signalement.setPhotos(photoPaths.toString());
+            }
+
+            signalementRepository.save(signalement);
+            return ResponseEntity.ok(signalement);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Erreur lors de l'upload des photos");
+        }
+    }
+
     @GetMapping("/api/signalements/export")
     @ResponseBody
     public ResponseEntity<String> exporterSignalements() {
@@ -106,7 +140,7 @@ public class CartographieController {
             return ResponseEntity.internalServerError().body("Erreur lors de l'export");
         }
     }
-
+    
     @PutMapping("/api/signalements/{id}/moderation")
     @ResponseBody
     public ResponseEntity<?> modererSignalement(@PathVariable Long id, @RequestParam String statut) {

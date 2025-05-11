@@ -135,6 +135,23 @@
             border-radius: 5px;
             border-left: 4px solid #d32f2f;
         }
+
+        .modal-footer .btn {
+            font-weight: 600;
+            padding: 10px 20px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-footer .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-footer .btn:focus {
+            outline: 3px solid #0056b3;
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body>
@@ -295,21 +312,21 @@
                 // Ajouter la modal pour chaque signalement
                 const modalHtml = `
                     <div class="modal fade" id="modalSignalement${s.id}" tabindex="-1" aria-labelledby="modalSignalementLabel${s.id}" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
                             <div class="modal-content bg-dark text-white">
-                                <div class="modal-header">
+                                <div class="modal-header border-bottom border-secondary">
                                     <h5 class="modal-title" id="modalSignalementLabel${s.id}">Détails du Signalement</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer" tabindex="0"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="formSignalement${s.id}">
+                                    <form id="formSignalement${s.id}" onsubmit="event.preventDefault(); sauvegarderModifications(${s.id});">
                                         <div class="mb-3">
                                             <label class="form-label">Type</label>
                                             <input type="text" class="form-control" value="${typeLibelle}" readonly>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Description</label>
-                                            <textarea class="form-control" id="description${s.id}">${s.description}</textarea>
+                                            <textarea class="form-control" id="description${s.id}" rows="3" required>${s.description}</textarea>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Date de création</label>
@@ -334,7 +351,6 @@
                                                 <span class="close">&times;</span>
                                                 <img src="" alt="Photo en grand format">
                                             </div>
-                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Nouvelles photos</label>
@@ -342,9 +358,9 @@
                                         </div>
                                     </form>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                                    <button type="button" class="btn btn-primary" onclick="sauvegarderModifications(${s.id})">Sauvegarder</button>
+                                <div class="modal-footer border-top border-secondary">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Fermer" tabindex="0">Fermer</button>
+                                    <button type="submit" class="btn btn-primary" form="formSignalement${s.id}" aria-label="Sauvegarder" tabindex="0">Sauvegarder</button>
                                 </div>
                             </div>
                         </div>
@@ -377,6 +393,14 @@
             });
         }
 
+        function fermerModal(id) {
+            const modalElement = document.getElementById(`modalSignalement${id}`);
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }
+
         async function sauvegarderModifications(id) {
             try {
                 const formData = new FormData();
@@ -389,22 +413,47 @@
                     }
                 }
 
-                await fetch(`/api/signalements/${id}`, {
+                // Vérifier si l'endpoint API est accessible
+                const apiUrl = '/api/signalements';
+                const testResponse = await fetch(apiUrl);
+                if (!testResponse.ok) {
+                    throw new Error('L\'API n\'est pas disponible. Veuillez contacter l\'administrateur.');
+                }
+
+                const response = await fetch(`${apiUrl}/${id}`, {
                     method: 'PUT',
                     body: formData
                 });
 
-                Swal.fire({
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Le signalement demandé n\'existe pas ou a été supprimé.');
+                    }
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Erreur HTTP ${response.status}: ${response.statusText}`);
+                }
+                const responseData = await response.json();
+
+                // Fermer la modal
+                const modalElement = document.getElementById(`modalSignalement${id}`);
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                    // Attendre que la modal soit complètement fermée
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+
+                await Swal.fire({
                     title: 'Succès',
                     text: 'Les modifications ont été enregistrées avec succès.',
                     icon: 'success',
                     confirmButtonText: 'OK'
                 });
 
-                chargerSignalements();
+                await chargerSignalements();
             } catch (error) {
                 console.error('Erreur lors de la sauvegarde:', error);
-                Swal.fire({
+                await Swal.fire({
                     title: 'Erreur',
                     text: 'Une erreur est survenue lors de la sauvegarde des modifications.',
                     icon: 'error',
