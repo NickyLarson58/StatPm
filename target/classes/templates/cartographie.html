@@ -186,7 +186,7 @@
             markers = [];
             const selectedType = document.getElementById('type');
             const typeText = selectedType.options[selectedType.selectedIndex].textContent;
-            const icon = typeIcons[typeText] || L.Icon.Default;
+            const icon = typeIcons[typeText] || new L.Icon.Default();
             let marker = L.marker([location.lat, location.lng], {icon: icon}).addTo(map);
             markers.push(marker);
         }
@@ -208,15 +208,20 @@
         function afficherSignalements(signalements) {
             const container = document.getElementById('liste-signalements');
             container.innerHTML = '';
-            markers.forEach(m => m.setMap(null));
+            markers.forEach(m => map.removeLayer(m));
             markers = [];
 
             signalements.forEach(s => {
+                // Récupérer le libellé du type depuis le select
+                const typeSelect = document.getElementById('type');
+                const typeOption = Array.from(typeSelect.options).find(option => option.value === s.type);
+                const typeLibelle = typeOption ? typeOption.textContent : 'Type inconnu';
+                
                 // Ajouter à la liste
                 const div = document.createElement('div');
                 div.className = 'signalement-item';
                 div.innerHTML = `
-                    <strong>${s.type}</strong><br>
+                    <strong>${typeLibelle}</strong><br>
                     ${s.description}<br>
                     <small>Statut: ${s.statut}</small><br>
                     <button onclick="modererSignalement(${s.id}, 'valide')" class="tool-button btn-sm">Valider</button>
@@ -224,10 +229,10 @@
                 `;
                 container.appendChild(div);
 
-                // Ajouter sur la carte avec l'icône correspondante
-                const icon = typeIcons[s.type] || L.Icon.Default;
+                // Utiliser le type de signalement pour sélectionner l'icône appropriée
+                const icon = typeIcons[typeLibelle] || new L.Icon.Default();
                 const marker = L.marker([s.latitude, s.longitude], {
-                    title: s.type,
+                    title: typeLibelle,
                     icon: icon
                 }).addTo(map);
                 markers.push(marker);
