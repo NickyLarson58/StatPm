@@ -77,6 +77,57 @@
             border: 1px solid #0056b3;
         }
 
+        .photo-gallery {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0;
+            margin-bottom: 15px;
+        }
+
+        .photo-thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #0056b3;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        .photo-thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .photo-modal img {
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .photo-modal .close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
         .signalement-item {
             background: rgba(0, 86, 179, 0.3);
             padding: 15px;
@@ -208,6 +259,16 @@
             }
         }
 
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const jour = String(date.getDate()).padStart(2, '0');
+            const mois = String(date.getMonth() + 1).padStart(2, '0');
+            const annee = date.getFullYear();
+            const heures = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${jour}/${mois}/${annee} - ${heures}:${minutes}`;
+        }
+
         function afficherSignalements(signalements) {
             const container = document.getElementById('liste-signalements');
             container.innerHTML = '';
@@ -252,7 +313,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Date de création</label>
-                                            <input type="text" class="form-control" value="${s.dateCreation}" readonly>
+                                            <input type="text" class="form-control" value="${formatDate(s.dateCreation)}" readonly>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Utilisateur</label>
@@ -260,14 +321,19 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Brigade</label>
-                                            <input type="text" class="form-control" value="${s.brigade}" readonly>
+                                            <input type="text" class="form-control" value="${connectedAgentBrigade}" readonly>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Photos</label>
-                                            <div id="photos${s.id}" class="d-flex flex-wrap gap-2">
-                                                ${s.photos ? s.photos.map(photo => `
-                                                    <img src="${photo}" class="img-thumbnail" style="max-width: 200px;">
-                                                `).join('') : 'Aucune photo'}
+                                            <div id="photos${s.id}" class="photo-gallery">
+                                                ${Array.isArray(s.photos) && s.photos.length > 0 ? 
+                                                    s.photos.map(photo => `<img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)">`).join('\n') 
+                                                    : '<p class="text-muted">Aucune photo</p>'}
+                                            </div>
+                                            <div class="photo-modal" onclick="closePhotoModal(event)">
+                                                <span class="close">&times;</span>
+                                                <img src="" alt="Photo en grand format">
+                                            </div>
                                             </div>
                                         </div>
                                         <div class="mb-3">
@@ -368,6 +434,7 @@
             .then(response => response.json())
             .then(userInfo => {
                 connectedAgentId = userInfo.matricule;
+                connectedAgentBrigade = userInfo.brigade;
             })
             .catch(error => console.error('Erreur chargement agents:', error));
         }
@@ -436,6 +503,19 @@
                 });
             } catch (error) {
                 console.error('Erreur lors du chargement des types de signalement:', error);
+            }
+        }
+
+        function openPhotoModal(src) {
+            const modal = event.target.parentElement.nextElementSibling;
+            const modalImg = modal.querySelector('img');
+            modalImg.src = src;
+            modal.style.display = 'flex';
+        }
+
+        function closePhotoModal(event) {
+            if (event.target.className === 'photo-modal' || event.target.className === 'close') {
+                event.target.closest('.photo-modal').style.display = 'none';
             }
         }
 
