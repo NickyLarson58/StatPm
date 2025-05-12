@@ -2,10 +2,14 @@ package src.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "signalement")
 public class Signalement {
+    
+    @OneToMany(mappedBy = "signalement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Photo> photos;
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,13 +33,21 @@ public class Signalement {
     @Column(name = "id_utilisateur")
     private Long idUtilisateur;
     
-    @Column(columnDefinition = "TEXT")
-    private String photos;
-    
     @Column(nullable = false)
     private String statut;
-
+    
+    @Column(name = "adresse")
+    private String adresse;
+    
     // Getters et Setters
+    public List<Photo> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<Photo> photos) {
+        this.photos = photos;
+    }
+
     public Long getId() {
         return id;
     }
@@ -92,19 +104,18 @@ public class Signalement {
         this.idUtilisateur = idUtilisateur;
     }
 
-    public String getPhotos() {
-        return photos;
-    }
-
-    public void setPhotos(String photos) {
-        this.photos = photos;
-    }
-
     public String getStatut() {
         return statut;
     }
 
     public void setStatut(String statut) {
         this.statut = statut;
+    }
+    
+    public String getAdresse() {
+        return adresse;
+    }
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
     }
 }

@@ -107,14 +107,16 @@
         .photo-modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 600px;
             background-color: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            transform: translate(-50%, -50%);
+            border-radius: 10px;
         }
 
         .photo-modal img {
@@ -191,12 +193,24 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Adresse</label>
+                            <input type="text" class="form-control" id="adresse" placeholder="Entrez l'adresse du signalement" required>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Description</label>
                             <textarea class="form-control" id="description" required></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Photos</label>
-                            <input type="file" class="form-control" id="photos" multiple accept="image/*">
+                            <!-- Modal pour afficher la photo en grand -->
+                            <div class="photo-modal" id="photoModalCustom" onclick="closePhotoModal(event)" style="display:none; width:800px; height:600px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000; border-radius:10px;">
+                              <span class="close" style="position:absolute; top:30px; right:40px; color:#fff; font-size:40px; cursor:pointer;" onclick="closePhotoModal(event)">&times;</span>
+                              <img src="" alt="Photo en grand format" id="photoModalImg" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 20px #000; display:none;">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nouvelles photos</label>
+                            <input type="file" class="form-control" id="newPhotos${s.id}" name="newPhotos${s.id}" multiple accept="image/*">
                         </div>
                         <button type="submit" class="tool-button w-100">Envoyer</button>
                     </form>
@@ -286,10 +300,8 @@
                 'AUTRES': 'AUTRES'
             };
             try {
-                console.log('Appel API pour récupérer les signalements');
                 const response = await fetch('/api/signalements');
                 const signalements = await response.json();
-                console.log('Signalements reçus:', signalements);
                 let signalementsFiltres = signalements;
                 if (type && type !== 'tous') {
                     signalementsFiltres = signalements.filter(s => {
@@ -298,7 +310,6 @@
                         return typeSignalement === type;
                     });
                 }
-                console.log('Signalements filtrés:', signalementsFiltres);
                 afficherSignalements(signalementsFiltres, type);
             } catch (error) {
                 console.error('Erreur lors du chargement des signalements:', error);
@@ -367,20 +378,16 @@
                                             <input type="text" class="form-control" value="${connectedAgentBrigade}" readonly>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Photos</label>
+                                            <label class="form-label">Photos existantes</label>
                                             <div id="photos${s.id}" class="photo-gallery">
-                                                ${Array.isArray(s.photos) && s.photos.length > 0 ? 
-                                                    s.photos.map(photo => `<img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)">`).join('\n') 
+                                                ${Array.isArray(s.photos) && s.photos.length > 0 ?
+                                                    s.photos.map(photo => `<img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="console.log('Miniature cliquée:', this.src); openPhotoModal(this.src)">`).join('\n')
                                                     : '<p class="text-muted">Aucune photo</p>'}
-                                            </div>
-                                            <div class="photo-modal" onclick="closePhotoModal(event)">
-                                                <span class="close">&times;</span>
-                                                <img src="" alt="Photo en grand format">
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Nouvelles photos</label>
-                                            <input type="file" class="form-control" id="newPhotos${s.id}" multiple accept="image/*">
+                                            <label class="form-label">Ajouter des photos</label>
+                                            <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
                                         </div>
                                     </form>
                                 </div>
@@ -433,9 +440,8 @@
             try {
                 const formData = new FormData();
                 formData.append('description', document.getElementById(`description${id}`).value);
-                
                 const photosInput = document.getElementById(`newPhotos${id}`);
-                if (photosInput.files.length > 0) {
+                if (photosInput && photosInput.files && photosInput.files.length > 0) {
                     for (let photo of photosInput.files) {
                         formData.append('photos', photo);
                     }
@@ -577,16 +583,25 @@
             }
         }
 
-        function openPhotoModal(src) {
-            const modal = event.target.parentElement.nextElementSibling;
-            const modalImg = modal.querySelector('img');
-            modalImg.src = src;
-            modal.style.display = 'flex';
+        // MODAL PHOTO AGRANDIE
+        function openPhotoModal(photoUrl) {
+            Swal.fire({
+                title: 'Photo',
+                html: `<img src="${photoUrl}" alt="Photo du signalement" style="max-width:90vw; max-height:80vh; border-radius:8px; box-shadow:0 0 20px #000;">`,
+                showCloseButton: true,
+                showConfirmButton: false,
+                background: 'rgba(0,0,0,0.95)',
+                width: 850,
+                customClass: {
+                    popup: 'photo-modal-swal'
+                }
+            });
         }
-
         function closePhotoModal(event) {
-            if (event.target.className === 'photo-modal' || event.target.className === 'close') {
-                event.target.closest('.photo-modal').style.display = 'none';
+            const modal = document.getElementById('photoModalCustom');
+            if (event && event.target && (event.target === modal || event.target.classList.contains('close'))) {
+                modal.style.display = 'none';
+                document.getElementById('photoModalImg').src = '';
             }
         }
 

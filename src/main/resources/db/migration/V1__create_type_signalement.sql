@@ -19,3 +19,6 @@ ALTER TABLE signalement
 ADD COLUMN type_id INTEGER,
 ADD CONSTRAINT fk_signalement_type
 FOREIGN KEY (type_id) REFERENCES type_signalement(id);
+
+-- Ajout de la colonne adresse dans la table signalement
+ALTER TABLE signalement ADD COLUMN adresse VARCHAR(255);

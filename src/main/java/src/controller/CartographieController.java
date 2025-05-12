@@ -18,12 +18,19 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import src.model.Photo;
+import src.repository.PhotoRepository;
+import src.model.dto.SignalementDTO;
 
 @Controller
 public class CartographieController {
 
     @Autowired
     private SignalementRepository signalementRepository;
+    @Autowired
+    private PhotoRepository photoRepository;
 
     private final String UPLOAD_DIR = "uploads/signalements";
 
@@ -40,16 +47,15 @@ public class CartographieController {
         signalement.setDateCreation(LocalDateTime.now());
         signalement.setStatut("en_attente");
         Signalement nouveauSignalement = signalementRepository.save(signalement);
-        return ResponseEntity.ok(nouveauSignalement);
+        SignalementDTO dto = toDTO(nouveauSignalement);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/api/signalements")
     @ResponseBody
-    public List<Signalement> getSignalements(@RequestParam(required = false) String statut) {
-        if (statut != null) {
-            return signalementRepository.findByStatut(statut);
-        }
-        return signalementRepository.findAll();
+    public List<SignalementDTO> getSignalements(@RequestParam(required = false) String statut) {
+        List<Signalement> signalements = (statut != null) ? signalementRepository.findByStatut(statut) : signalementRepository.findAll();
+        return signalements.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
     @PostMapping("/api/signalements/{id}/photos")
@@ -58,8 +64,6 @@ public class CartographieController {
         try {
             Signalement signalement = signalementRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
-
-            StringBuilder photoPaths = new StringBuilder();
             for (MultipartFile file : files) {
                 String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
                 Path uploadPath = Paths.get(UPLOAD_DIR);
@@ -67,11 +71,11 @@ public class CartographieController {
                     Files.createDirectories(uploadPath);
                 }
                 Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
-                photoPaths.append(fileName).append(";");
+                Photo photo = new Photo();
+                photo.setChemin(fileName);
+                photo.setSignalement(signalement);
+                photoRepository.save(photo);
             }
-
-            signalement.setPhotos(photoPaths.toString());
-            signalementRepository.save(signalement);
             return ResponseEntity.ok().build();
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Erreur lors de l'upload des photos");
@@ -84,13 +88,10 @@ public class CartographieController {
         try {
             Signalement signalement = signalementRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Le signalement demandé n'existe pas ou a été supprimé."));
-
             if (description != null) {
                 signalement.setDescription(description);
             }
-
             if (photos != null && photos.length > 0) {
-                StringBuilder photoPaths = new StringBuilder();
                 for (MultipartFile file : photos) {
                     String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
                     Path uploadPath = Paths.get(UPLOAD_DIR);
@@ -98,13 +99,15 @@ public class CartographieController {
                         Files.createDirectories(uploadPath);
                     }
                     Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
-                    photoPaths.append(fileName).append(";");
+                    Photo photo = new Photo();
+                    photo.setChemin(fileName);
+                    photo.setSignalement(signalement);
+                    photoRepository.save(photo);
                 }
-                signalement.setPhotos(photoPaths.toString());
             }
-
             signalementRepository.save(signalement);
-            return ResponseEntity.ok(signalement);
+            SignalementDTO dto = toDTO(signalement);
+            return ResponseEntity.ok(dto);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         } catch (IOException e) {
@@ -153,5 +156,39 @@ public class CartographieController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Erreur lors de la modération");
         }
+    }
+
+    @GetMapping("/api/signalements/{id}/photos/{photo}")
+    @ResponseBody
+    public ResponseEntity<?> getPhoto(@PathVariable Long id, @PathVariable String photo) {
+        try {
+            Path filePath = Paths.get(UPLOAD_DIR).resolve(photo);
+            if (!Files.exists(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+            byte[] fileContent = Files.readAllBytes(filePath);
+            return ResponseEntity.ok()
+                    .header("Content-Type", "image/jpeg")
+                    .body(fileContent);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Erreur lors de la récupération de la photo");
+        }
+    }
+
+    private SignalementDTO toDTO(Signalement signalement) {
+        SignalementDTO dto = new SignalementDTO();
+        dto.setId(signalement.getId());
+        dto.setType(signalement.getType());
+        dto.setDescription(signalement.getDescription());
+        dto.setLatitude(signalement.getLatitude());
+        dto.setLongitude(signalement.getLongitude());
+        dto.setDateCreation(signalement.getDateCreation());
+        dto.setIdUtilisateur(signalement.getIdUtilisateur());
+        dto.setStatut(signalement.getStatut());
+        dto.setAdresse(signalement.getAdresse());
+        if (signalement.getPhotos() != null) {
+            dto.setPhotos(signalement.getPhotos().stream().map(Photo::getChemin).collect(Collectors.toList()));
+        }
+        return dto;
     }
 }

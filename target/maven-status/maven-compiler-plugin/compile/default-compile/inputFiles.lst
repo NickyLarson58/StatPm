@@ -4,6 +4,7 @@ C:\StatPm\src\main\java\src\controller\ProceduresController.java
 C:\StatPm\src\main\java\src\controller\StatisticsController.java
 C:\StatPm\src\main\java\src\service\impl\MissionServiceImpl.java
 C:\StatPm\src\main\java\src\repository\MissionsRepository.java
+C:\StatPm\src\main\java\src\repository\PhotoRepository.java
 C:\StatPm\src\main\java\src\log.java
 C:\StatPm\src\main\java\src\model\StatMission.java
 C:\StatPm\src\main\java\src\repository\AdressesRepository.java
@@ -30,6 +31,7 @@ C:\StatPm\src\main\java\src\controller\BrigadeController.java
 C:\StatPm\src\main\java\src\model\StatIntervention.java
 C:\StatPm\src\main\java\src\controller\ConsulterStatController.java
 C:\StatPm\src\main\java\src\controller\RedactionController.java
+C:\StatPm\src\main\java\src\model\dto\SignalementDTO.java
 C:\StatPm\src\main\java\src\controller\ConfigController.java
 C:\StatPm\src\main\java\src\repository\AgentsRepository.java
 C:\StatPm\src\main\java\src\controller\CartographieController.java
@@ -45,6 +47,7 @@ C:\StatPm\src\main\java\src\model\Brigade.java
 C:\StatPm\src\main\java\src\Utils.java
 C:\StatPm\src\main\java\src\service\StatInterventionService.java
 C:\StatPm\src\main\java\src\model\Adresses.java
+C:\StatPm\src\main\java\src\model\Photo.java
 C:\StatPm\src\main\java\src\service\InterventionService.java
 C:\StatPm\src\main\java\src\repository\InterventionsRepository.java
 C:\StatPm\src\main\java\src\repository\StatInterventionRepository.java

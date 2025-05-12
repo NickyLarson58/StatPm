@@ -145,7 +145,7 @@ public class WebController {
             String brigade = params.get("brigade");
             String intervention = params.get("typeIntervention");
             String date = params.get("dateCreation");
-            String adresse = "";
+            String adresse = params.get("adresse");
             
             statService.creerStat(brigade, intervention, adresse, date);
 
