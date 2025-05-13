@@ -604,6 +604,49 @@
             }
         }
 
+        async function sauvegarderModifications(id) {
+            try {
+                const formData = new FormData();
+                formData.append('description', document.getElementById(`description${id}`).value);
+                
+                // Récupérer les nouvelles photos
+                const photosInput = document.querySelector(`#modalSignalement${id} input[type="file"]`);
+                if (photosInput && photosInput.files && photosInput.files.length > 0) {
+                    for (let photo of photosInput.files) {
+                        formData.append('files', photo);
+                    }
+                }
+
+                const response = await fetch(`/api/signalements/${id}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la mise à jour du signalement');
+                }
+
+                // Fermer la modal et rafraîchir les signalements
+                fermerModal(id);
+                chargerSignalements();
+
+                Swal.fire({
+                    title: 'Succès',
+                    text: 'Le signalement a été mis à jour avec succès',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du signalement:', error);
+                Swal.fire({
+                    title: 'Erreur',
+                    text: 'Erreur lors de la mise à jour du signalement',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
         window.onload = async function() {
             initMap();
             await chargerTypesSignalement();
