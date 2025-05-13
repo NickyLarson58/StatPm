@@ -2278,3 +2278,8 @@ Caused by: java.net.BindException: Address already in use: bind
 2025-05-13 12:43:09 [http-nio-8082-exec-1] INFO  src.service.LoggingService - [2025-05-13 12:43:09] Type: AUTH, Matricule: 101149, Location: ./documents/destination - SQL results - nom: MANNELLO, prenom: Anthony, brigade: BRIGADE 2
 2025-05-13 12:43:09 [http-nio-8082-exec-1] INFO  src.service.LoggingService - [2025-05-13 12:43:09] Type: AUTH, Matricule: 101149, Location: ./documents/destination - Agent details retrieved successfully
 2025-05-13 12:43:09 [http-nio-8082-exec-1] DEBUG src.service.LoggingService - [2025-05-13 12:43:09] Type: AUTH, Matricule: 101149, Location: ./documents/destination - Récupération du pouvoir: userPm
+2025-05-13 12:48:40 [http-nio-8082-exec-5] INFO  src.service.LoggingService - [2025-05-13 12:48:40] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Connexion réussie
+2025-05-13 12:48:40 [http-nio-8082-exec-5] INFO  src.service.LoggingService - [2025-05-13 12:48:40] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Executing SQL query for agent details
+2025-05-13 12:48:40 [http-nio-8082-exec-5] INFO  src.service.LoggingService - [2025-05-13 12:48:40] Type: AUTH, Matricule: 56020, Location: ./documents/destination - SQL results - nom: BOUZEBOUDJA, prenom: Mansour, brigade: ENCADREMENT
+2025-05-13 12:48:40 [http-nio-8082-exec-5] INFO  src.service.LoggingService - [2025-05-13 12:48:40] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Agent details retrieved successfully
+2025-05-13 12:48:40 [http-nio-8082-exec-5] DEBUG src.service.LoggingService - [2025-05-13 12:48:40] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Récupération du pouvoir: admin

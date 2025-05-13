@@ -407,7 +407,10 @@
                     const marker = L.marker([s.latitude, s.longitude], {
                         title: typeLibelle,
                         icon: icon
-                    }).addTo(map);
+                    }).addTo(map)
+                    .on('click', function() {
+                        consulterSignalement(s.id);
+                    });
                     markers.push(marker);
                 }
             });
