@@ -228,6 +228,8 @@
         let markers = [];
         let selectedLocation = null;
         
+        loadInitialData();
+        
         // Définition des icônes personnalisées pour chaque type de signalement
         const typeIcons = {
             'DÊPOTS': L.icon({
@@ -359,6 +361,10 @@
                                         <div class="mb-3">
                                             <label class="form-label">Type</label>
                                             <input type="text" class="form-control" value="${typeLibelle}" readonly>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Adresse</label>
+                                            <input type="text" class="form-control" id="adresse${s.id}" name="adresse${s.id}" value="${s.adresse}" required>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Description</label>
@@ -502,7 +508,6 @@
             })
             .catch(error => console.error('Erreur chargement agents:', error));
         }
-        loadInitialData();
 
         document.getElementById('form-signalement').addEventListener('submit', async function(e) {
             e.preventDefault();
