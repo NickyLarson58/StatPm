@@ -43,12 +43,47 @@ public class CartographieController {
 
     @PostMapping("/api/signalements")
     @ResponseBody
-    public ResponseEntity<?> creerSignalement(@RequestBody Signalement signalement) {
-        signalement.setDateCreation(LocalDateTime.now());
-        signalement.setStatut("en_attente");
-        Signalement nouveauSignalement = signalementRepository.save(signalement);
-        SignalementDTO dto = toDTO(nouveauSignalement);
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<?> creerSignalement(
+            @RequestParam("type") String type,
+            @RequestParam("description") String description,
+            @RequestParam("latitude") double latitude,
+            @RequestParam("longitude") double longitude,
+            @RequestParam("adresse") String adresse,
+            @RequestParam(value = "idUtilisateur", required = false) Long idUtilisateur,
+            @RequestParam(value = "files", required = false) MultipartFile[] files) {
+        try {
+            Signalement signalement = new Signalement();
+            signalement.setType(type);
+            signalement.setDescription(description);
+            signalement.setLatitude(latitude);
+            signalement.setLongitude(longitude);
+            signalement.setAdresse(adresse);
+            signalement.setDateCreation(LocalDateTime.now());
+            signalement.setStatut("en_attente");
+            if (idUtilisateur != null) {
+                signalement.setIdUtilisateur(idUtilisateur);
+            }
+            Signalement nouveauSignalement = signalementRepository.save(signalement);
+            // Gestion des fichiers
+            if (files != null && files.length > 0) {
+                for (MultipartFile file : files) {
+                    String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+                    Path uploadPath = Paths.get(UPLOAD_DIR);
+                    if (!Files.exists(uploadPath)) {
+                        Files.createDirectories(uploadPath);
+                    }
+                    Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
+                    Photo photo = new Photo();
+                    photo.setChemin(fileName);
+                    photo.setSignalement(nouveauSignalement);
+                    photoRepository.save(photo);
+                }
+            }
+            SignalementDTO dto = toDTO(nouveauSignalement);
+            return ResponseEntity.ok(dto);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body("Erreur lors de la création du signalement ou de l'upload des photos");
+        }
     }
 
     @GetMapping("/api/signalements")

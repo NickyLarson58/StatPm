@@ -185,7 +185,7 @@
             <div class="col-md-3">
                 <div id="signalement-form" class="signalement-form" style="display: none;">
                     <h4>Nouveau Signalement</h4>
-                    <form id="form-signalement">
+                    <form id="form-signalement" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label class="form-label">Type</label>
                             <select class="form-control" id="type" required>
@@ -210,7 +210,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Nouvelles photos</label>
-                            <input type="file" class="form-control" id="newPhotos${s.id}" name="newPhotos${s.id}" multiple accept="image/*">
+                            <input type="file" class="form-control" id="photos" name="files" multiple accept="image/*">
                         </div>
                         <button type="submit" class="tool-button w-100">Envoyer</button>
                     </form>
@@ -341,8 +341,7 @@
                 div.className = 'signalement-item';
                 div.innerHTML = `
                     <strong>${typeLibelle}</strong><br>
-                    ${s.description}<br>
-                    <small>Statut: ${s.statut}</small><br>
+                    ${s.adresse}<br>
                     <button onclick="consulterSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-eye"></i> Consulter</button>
                     <button onclick="supprimerSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-trash"></i> Supprimer</button>
                 `;
@@ -387,7 +386,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Ajouter des photos</label>
-                                            <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
+                                            <input type="file" class="form-control" id="photos" name="files" multiple accept="image/*">
                                         </div>
                                     </form>
                                 </div>
@@ -524,37 +523,28 @@
                 return;
             }
 
-            const formData = {
-                type: document.getElementById('type').value,
-                description: document.getElementById('description').value,
-                latitude: selectedLocation.lat,
-                longitude: selectedLocation.lng,
-                idUtilisateur: connectedAgentId
-            };
+            const formData = new FormData();
+            formData.append('type', document.getElementById('type').value);
+            formData.append('adresse', document.getElementById('adresse').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('latitude', selectedLocation.lat);
+            formData.append('longitude', selectedLocation.lng);
+            formData.append('idUtilisateur', connectedAgentId);
+            const photosInput = document.getElementById('photos');
+            if (photosInput && photosInput.files && photosInput.files.length > 0) {
+                for (let photo of photosInput.files) {
+                    formData.append('files', photo);
+                }
+            }
 
             try {
                 const response = await fetch('/api/signalements', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
 
-                const nouveauSignalement = await response.json();
-
-                // Upload des photos si présentes
-                const photos = document.getElementById('photos').files;
-                if (photos.length > 0) {
-                    const photoFormData = new FormData();
-                    for (let photo of photos) {
-                        photoFormData.append('files', photo);
-                    }
-
-                    await fetch(`/api/signalements/${nouveauSignalement.id}/photos`, {
-                        method: 'POST',
-                        body: photoFormData
-                    });
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la création du signalement');
                 }
 
                 document.getElementById('form-signalement').reset();
@@ -563,6 +553,12 @@
                 chargerSignalements();
             } catch (error) {
                 console.error('Erreur lors de la création du signalement:', error);
+                Swal.fire({
+                    title: 'Erreur',
+                    text: 'Erreur lors de la création du signalement',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         });
 
@@ -585,8 +581,11 @@
 
         // MODAL PHOTO AGRANDIE
         function openPhotoModal(photoUrl) {
+            // Extraire le nom du fichier à partir de l'URL
+            const fileName = photoUrl.split('_').pop().split('?')[0];
+            
             Swal.fire({
-                title: 'Photo',
+                title: fileName,
                 html: `<img src="${photoUrl}" alt="Photo du signalement" style="max-width:90vw; max-height:80vh; border-radius:8px; box-shadow:0 0 20px #000;">`,
                 showCloseButton: true,
                 showConfirmButton: false,
