@@ -187,21 +187,21 @@
                     <h4>Nouveau Signalement</h4>
                     <form id="form-signalement" enctype="multipart/form-data">
                         <div class="mb-3">
-                            <label class="form-label">Type</label>
-                            <select class="form-control" id="type" required>
+                            <label class="form-label" for="type">Type</label>
+                            <select class="form-control" id="type" name="type" required>
                                 <option value="">Sélectionnez un type</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Adresse</label>
-                            <input type="text" class="form-control" id="adresse" placeholder="Entrez l'adresse du signalement" required>
+                            <label class="form-label" for="adresse">Adresse</label>
+                            <input type="text" class="form-control" id="adresse" name="adresse" placeholder="Entrez l'adresse du signalement" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
+                            <label class="form-label" for="description">Description</label>
                             <textarea class="form-control" id="description" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Photos</label>
+                            <label class="form-label" for="photos">Nouvelles photos</label>
                             <!-- Modal pour afficher la photo en grand -->
                             <div class="photo-modal" id="photoModalCustom" onclick="closePhotoModal(event)" style="display:none; width:800px; height:600px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000; border-radius:10px;">
                               <span class="close" style="position:absolute; top:30px; right:40px; color:#fff; font-size:40px; cursor:pointer;" onclick="closePhotoModal(event)">&times;</span>
@@ -209,7 +209,7 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Nouvelles photos</label>
+                            <label class="form-label" for="photos">Ajouter des photos</label>
                             <input type="file" class="form-control" id="photos" name="files" multiple accept="image/*">
                         </div>
                         <button type="submit" class="tool-button w-100">Envoyer</button>
@@ -355,14 +355,14 @@
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer" tabindex="0"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <form id="formSignalement${s.id}" onsubmit="event.preventDefault(); sauvegarderModifications(${s.id});">
+                                    <form id="formSignalement${s.id}" onsubmit="event.preventDefault(); sauvegarderModifications(${s.id}); return false;">
                                         <div class="mb-3">
                                             <label class="form-label">Type</label>
                                             <input type="text" class="form-control" value="${typeLibelle}" readonly>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Description</label>
-                                            <textarea class="form-control" id="description${s.id}" rows="3" required>${s.description}</textarea>
+                                            <textarea class="form-control" id="description${s.id}" name="description${s.id}" rows="3" required>${s.description}</textarea>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Date de création</label>
@@ -436,59 +436,44 @@
         }
 
         async function sauvegarderModifications(id) {
+            console.log('sauvegarderModifications appelée pour id:', id);
             try {
                 const formData = new FormData();
                 formData.append('description', document.getElementById(`description${id}`).value);
-                const photosInput = document.getElementById(`newPhotos${id}`);
-                if (photosInput && photosInput.files && photosInput.files.length > 0) {
-                    for (let photo of photosInput.files) {
-                        formData.append('photos', photo);
+                
+                const filesInput = document.querySelector(`#modalSignalement${id} input[type=file]`);
+                console.log('filesInput.files:', filesInput.files); // Ajout du log ici
+
+                if (filesInput && filesInput.files.length > 0) {
+                    for (let i = 0; i < filesInput.files.length; i++) {
+                        const file = filesInput.files[i];
+                        console.log('Fichier ajouté au FormData:', file); // Ajout du log ici
+                        formData.append('files', file);
                     }
                 }
 
-                // Vérifier si l'endpoint API est accessible
-                const apiUrl = '/api/signalements';
-                const testResponse = await fetch(apiUrl);
-                if (!testResponse.ok) {
-                    throw new Error('L\'API n\'est pas disponible. Veuillez contacter l\'administrateur.');
-                }
-
-                const response = await fetch(`${apiUrl}/${id}`, {
+                const response = await fetch(`/api/signalements/${id}`, {
                     method: 'PUT',
                     body: formData
                 });
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('Le signalement demandé n\'existe pas ou a été supprimé.');
-                    }
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || `Erreur HTTP ${response.status}: ${response.statusText}`);
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Succès',
+                        text: 'Modifications enregistrées avec succès',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                    fermerModal(id);
+                    chargerSignalements();
+                } else {
+                    throw new Error('Erreur lors de la sauvegarde');
                 }
-                const responseData = await response.json();
-
-                // Fermer la modal
-                const modalElement = document.getElementById(`modalSignalement${id}`);
-                const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
-                    // Attendre que la modal soit complètement fermée
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                }
-
-                await Swal.fire({
-                    title: 'Succès',
-                    text: 'Les modifications ont été enregistrées avec succès.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-
-                await chargerSignalements();
             } catch (error) {
-                console.error('Erreur lors de la sauvegarde:', error);
-                await Swal.fire({
+                console.error('Erreur:', error);
+                Swal.fire({
                     title: 'Erreur',
-                    text: 'Une erreur est survenue lors de la sauvegarde des modifications.',
+                    text: 'Une erreur est survenue lors de la sauvegarde',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
@@ -601,49 +586,6 @@
             if (event && event.target && (event.target === modal || event.target.classList.contains('close'))) {
                 modal.style.display = 'none';
                 document.getElementById('photoModalImg').src = '';
-            }
-        }
-
-        async function sauvegarderModifications(id) {
-            try {
-                const formData = new FormData();
-                formData.append('description', document.getElementById(`description${id}`).value);
-                
-                // Récupérer les nouvelles photos
-                const photosInput = document.querySelector(`#modalSignalement${id} input[type="file"]`);
-                if (photosInput && photosInput.files && photosInput.files.length > 0) {
-                    for (let photo of photosInput.files) {
-                        formData.append('files', photo);
-                    }
-                }
-
-                const response = await fetch(`/api/signalements/${id}`, {
-                    method: 'PUT',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la mise à jour du signalement');
-                }
-
-                // Fermer la modal et rafraîchir les signalements
-                fermerModal(id);
-                chargerSignalements();
-
-                Swal.fire({
-                    title: 'Succès',
-                    text: 'Le signalement a été mis à jour avec succès',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-            } catch (error) {
-                console.error('Erreur lors de la mise à jour du signalement:', error);
-                Swal.fire({
-                    title: 'Erreur',
-                    text: 'Erreur lors de la mise à jour du signalement',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
             }
         }
 

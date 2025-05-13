@@ -119,15 +119,15 @@ public class CartographieController {
 
     @PutMapping("/api/signalements/{id}")
     @ResponseBody
-    public ResponseEntity<?> updateSignalement(@PathVariable Long id, @RequestParam(required = false) String description, @RequestParam(required = false) MultipartFile[] photos) {
+    public ResponseEntity<?> updateSignalement(@PathVariable Long id, @RequestParam(required = false) String description, @RequestParam(value = "files", required = false) MultipartFile[] files) {
         try {
             Signalement signalement = signalementRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Le signalement demandé n'existe pas ou a été supprimé."));
             if (description != null) {
                 signalement.setDescription(description);
             }
-            if (photos != null && photos.length > 0) {
-                for (MultipartFile file : photos) {
+            if (files != null && files.length > 0) {
+                for (MultipartFile file : files) {
                     String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
                     Path uploadPath = Paths.get(UPLOAD_DIR);
                     if (!Files.exists(uploadPath)) {
