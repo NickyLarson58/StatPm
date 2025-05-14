@@ -59,7 +59,7 @@ public class CartographieController {
             signalement.setLongitude(longitude);
             signalement.setAdresse(adresse);
             signalement.setDateCreation(LocalDateTime.now());
-            signalement.setStatut("en_attente");
+            signalement.setStatut("visible");
             if (idUtilisateur != null) {
                 signalement.setIdUtilisateur(idUtilisateur);
             }

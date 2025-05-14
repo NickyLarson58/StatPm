@@ -438,26 +438,11 @@
         }
 
         function gererSignalement(id) {
-            Swal.fire({
-                title: '<span style="font-size:2rem;font-weight:bold;color:#0056b3;"><i class="fas fa-cogs"></i> Gestion du signalement</span>',
-                html: '<div style="font-size:1.1rem;color:#fff;">' +
-                        '<p style="margin-bottom:20px;"><i class="fas fa-info-circle text-info"></i> Que souhaitez-vous faire avec ce signalement ?</p>' +
-                        '<div class="d-flex flex-column gap-2">' +
-                            '<button class="swal2-styled" style="background:linear-gradient(135deg,#28a745 0%,#218838 50%,#1e7e34 100%);color:#fff;font-weight:bold;font-size:1rem;padding:10px 0;margin-bottom:5px;display:flex;align-items:center;gap:10px;justify-content:center;" onclick="archiverSignalement(' + id + ')"><i class="fas fa-archive"></i> Archiver</button>' +
-                            '<button class="swal2-styled" style="background:linear-gradient(135deg,#d32f2f 0%,#b71c1c 100%);color:#fff;font-weight:bold;font-size:1rem;padding:10px 0;margin-bottom:5px;display:flex;align-items:center;gap:10px;justify-content:center;" onclick="supprimerSignalement(' + id + ')"><i class="fas fa-trash-alt"></i> Supprimer</button>' +
-                            '</div>' +
-                      '</div>',
-                showConfirmButton: false,
-                showCancelButton: true,
-                cancelButtonText: 'Fermer',
-                background: 'linear-gradient(135deg, #001f3f 0%, #0056b3 100%)',
-                customClass: {
-                    popup: 'swal2-dialog-custom',
-                    title: 'swal-title-custom',
-                    htmlContainer: 'swal-html-custom',
-                    cancelButton: 'swal-cancel-custom'
-                }
-            });
+            // Afficher la modal personnalisée Bootstrap pour la gestion du signalement
+            const modal = new bootstrap.Modal(document.getElementById(`modalGestionSignalement`));
+            // Stocker l'ID du signalement dans la modal pour les actions (archiver/supprimer)
+            document.getElementById('gestion-signalement-id').value = id;
+            modal.show();
         }
 
         async function supprimerSignalement(id) {
@@ -496,7 +481,14 @@
                                 title: 'Suppression réussie',
                                 text: 'Le signalement a été supprimé avec succès.',
                                 icon: 'success',
-                                confirmButtonText: 'OK'
+                                confirmButtonText: 'OK',
+                                didClose: () => { 
+                                    Swal.close(); 
+                                    const modalGestion = bootstrap.Modal.getInstance(document.getElementById('modalGestionSignalement'));
+                                    if (modalGestion) {
+                                        modalGestion.hide();
+                                    }
+                                }
                             });
                             chargerSignalements();
                         } else {
@@ -504,7 +496,8 @@
                                 title: 'Erreur',
                                 text: "Une erreur est survenue lors de la suppression du signalement.",
                                 icon: 'error',
-                                confirmButtonText: 'OK'
+                                confirmButtonText: 'OK',
+                                didClose: () => { Swal.close(); }
                             });
                         }
                     } catch (error) {
@@ -758,6 +751,32 @@
             });
         }
     </script>
+</body>
+</html>
+
+<!-- Modal personnalisée pour la gestion du signalement -->
+<div class="modal fade" id="modalGestionSignalement" tabindex="-1" aria-labelledby="modalGestionSignalementLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white" style="border-radius: 15px; border: 2px solid #0056b3;">
+      <div class="modal-header border-bottom border-secondary">
+        <h5 class="modal-title" id="modalGestionSignalementLabel"><i class="fas fa-cogs"></i> Gestion du signalement</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="gestion-signalement-id" value="">
+        <p class="mb-4"><i class="fas fa-info-circle text-info"></i> Que souhaitez-vous faire avec ce signalement ?</p>
+        <div class="d-flex flex-column gap-2">
+          <button class="tool-button" style="background:linear-gradient(135deg,#28a745 0%,#218838 50%,#1e7e34 100%);" onclick="archiverSignalement(document.getElementById('gestion-signalement-id').value)"><i class="fas fa-archive"></i> Archiver</button>
+          <button class="tool-button" style="background:linear-gradient(135deg,#d32f2f 0%,#b71c1c 100%);" onclick="supprimerSignalement(document.getElementById('gestion-signalement-id').value)"><i class="fas fa-trash-alt"></i> Supprimer</button>
+        </div>
+      </div>
+      <div class="modal-footer border-top border-secondary">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+      </div>
+    </div>
+  </div>
+</div>
+</script>
 </body>
 </html>
 
