@@ -290,6 +290,15 @@
         }
 
         async function chargerSignalements(type = 'tous') {
+    // Mettre à jour l'état actif des boutons
+    document.querySelectorAll('.tool-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const activeButton = document.querySelector(`.tool-button[onclick="filtrerSignalements('${type}')"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
             // Mapping entre valeurs numériques et libellés
             const typeMapping = {
                 '1': 'DÊPOTS',
@@ -514,6 +523,16 @@
 
         // Correction des boutons de filtre pour appeler chargerSignalements avec le bon type
         function filtrerSignalements(type) {
+    // Supprimer la classe active de tous les boutons
+    document.querySelectorAll('.tool-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Ajouter la classe active au bouton cliqué
+    const activeButton = document.querySelector(`.tool-button[onclick="filtrerSignalements('${type}')"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
             chargerSignalements(type);
         }
 
