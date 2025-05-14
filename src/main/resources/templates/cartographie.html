@@ -345,7 +345,7 @@
                     <strong>${typeLibelle}</strong><br>
                     ${s.adresse}<br>
                     <button onclick="consulterSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-eye"></i> Consulter</button>
-                    <button onclick="supprimerSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-trash"></i> Supprimer</button>
+                    <button onclick="gererSignalement(${s.id})" class="tool-button btn-sm"><i class="fas fa-cogs"></i> Gérer</button>
                 `;
 
                 const modalHtml = `
@@ -425,6 +425,29 @@
         async function consulterSignalement(id) {
             const modal = new bootstrap.Modal(document.getElementById(`modalSignalement${id}`));
             modal.show();
+        }
+
+        function gererSignalement(id) {
+            Swal.fire({
+                title: '<span style="font-size:2rem;font-weight:bold;color:#0056b3;"><i class="fas fa-cogs"></i> Gestion du signalement</span>',
+                html: '<div style="font-size:1.1rem;color:#fff;">' +
+                        '<p style="margin-bottom:20px;"><i class="fas fa-info-circle text-info"></i> Que souhaitez-vous faire avec ce signalement ?</p>' +
+                        '<div class="d-flex flex-column gap-2">' +
+                            '<button class="swal2-styled" style="background:linear-gradient(135deg,#28a745 0%,#218838 50%,#1e7e34 100%);color:#fff;font-weight:bold;font-size:1rem;padding:10px 0;margin-bottom:5px;display:flex;align-items:center;gap:10px;justify-content:center;" onclick="archiverSignalement(' + id + ')"><i class="fas fa-archive"></i> Archiver</button>' +
+                            '<button class="swal2-styled" style="background:linear-gradient(135deg,#d32f2f 0%,#b71c1c 100%);color:#fff;font-weight:bold;font-size:1rem;padding:10px 0;margin-bottom:5px;display:flex;align-items:center;gap:10px;justify-content:center;" onclick="supprimerSignalement(' + id + ')"><i class="fas fa-trash-alt"></i> Supprimer</button>' +
+                            '</div>' +
+                      '</div>',
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'Fermer',
+                background: 'linear-gradient(135deg, #001f3f 0%, #0056b3 100%)',
+                customClass: {
+                    popup: 'swal2-dialog-custom',
+                    title: 'swal-title-custom',
+                    htmlContainer: 'swal-html-custom',
+                    cancelButton: 'swal-cancel-custom'
+                }
+            });
         }
 
         async function supprimerSignalement(id) {
@@ -604,3 +627,31 @@
     </script>
 </body>
 </html>
+
+async function retirerSignalementCarte(id) {
+    // Ici, vous pouvez envoyer une requête pour marquer le signalement comme inexistant côté serveur
+    // ou simplement le retirer de la carte côté client
+    // Exemple côté client :
+    markers = markers.filter(marker => {
+        if (marker.options && marker.options.title && marker.options.title.includes(id)) {
+            map.removeLayer(marker);
+            return false;
+        }
+        return true;
+    });
+    // Recharge la liste sans ce signalement
+    await chargerSignalements();
+}
+
+async function supprimerSignalementDefinitif(id) {
+    try {
+        const response = await fetch(`/api/signalements/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            await chargerSignalements();
+        } else {
+            Swal.fire('Erreur', 'La suppression a échoué.', 'error');
+        }
+    } catch (error) {
+        Swal.fire('Erreur', 'Une erreur est survenue.', 'error');
+    }
+}
