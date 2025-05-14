@@ -236,4 +236,31 @@ public class CartographieController {
         signalementRepository.save(signalement);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/api/signalements/{id}")
+    @ResponseBody
+    public ResponseEntity<?> supprimerSignalement(@PathVariable Long id) {
+        // Vérification d'autorisation (à adapter selon votre logique de sécurité)
+        // Exemple : if (!userHasDeleteRights()) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Non autorisé");
+        Signalement signalement = signalementRepository.findById(id)
+                .orElse(null);
+        if (signalement == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // Suppression des photos associées
+        if (signalement.getPhotos() != null) {
+            for (Photo photo : signalement.getPhotos()) {
+                // Suppression du fichier physique
+                try {
+                    Path filePath = Paths.get(UPLOAD_DIR, photo.getChemin());
+                    Files.deleteIfExists(filePath);
+                } catch (IOException e) {
+                    // Log erreur mais continuer la suppression
+                }
+                photoRepository.delete(photo);
+            }
+        }
+        signalementRepository.delete(signalement);
+        return ResponseEntity.ok().build();
+    }
 }

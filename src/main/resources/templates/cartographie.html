@@ -461,12 +461,77 @@
         }
 
         async function supprimerSignalement(id) {
-            Swal.fire({
-                title: 'Travaux en cours',
-                text: 'La fonctionnalité de suppression est en cours de développement.',
-                icon: 'info',
-                confirmButtonText: 'OK'
-            });
+            console.log('supprimerSignalement appelée pour id:', id);
+            console.log('connectedAgentPouvoir:', connectedAgentPouvoir);
+
+            if (connectedAgentPouvoir === 'admin' || connectedAgentPouvoir === 'userCb') {
+                // Nouvelle confirmation explicite avant suppression définitive
+                const confirmation = await Swal.fire({
+                    title: 'Confirmation de suppression',
+                    html: '<div style="font-size:1.1rem;color:#d32f2f;"><b>Attention :</b> Cette action est <b>définitive</b>.<br>Toutes les données liées à ce signalement, y compris celles utilisées pour les statistiques, seront <b>effacées définitivement</b>.<br>Voulez-vous vraiment continuer ?</div>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Oui, supprimer définitivement',
+                    cancelButtonText: 'Annuler',
+                    focusCancel: true,
+                    background: 'linear-gradient(135deg, #001f3f 0%, #0056b3 100%)',
+                    customClass: {
+                        popup: 'swal2-dialog-custom',
+                        title: 'swal-title-custom',
+                        htmlContainer: 'swal-html-custom',
+                        cancelButton: 'swal-cancel-custom',
+                        confirmButton: 'swal-confirm-custom'
+                    }
+                });
+                if (confirmation.isConfirmed) {
+                    try {
+                        const response = await fetch(`/api/signalements/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (response.ok) {
+                            Swal.fire({
+                                title: 'Suppression réussie',
+                                text: 'Le signalement a été supprimé avec succès.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            });
+                            chargerSignalements();
+                        } else {
+                            Swal.fire({
+                                title: 'Erreur',
+                                text: "Une erreur est survenue lors de la suppression du signalement.",
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Erreur',
+                            text: "Impossible de supprimer le signalement.",
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                } else {
+                    // Annulation explicite
+                    Swal.fire({
+                        title: 'Suppression annulée',
+                        text: 'Aucune donnée n\'a été supprimée.',
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } else {
+                Swal.fire({
+                    title: 'Accès refusé',
+                    text: "Vous n'avez pas les autorisations nécessaires pour supprimer ce signalement. Veuillez contacter un administrateur ou un chef de brigade.",
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
 
         function fermerModal(id) {
@@ -548,6 +613,7 @@
             .then(userInfo => {
                 connectedAgentId = userInfo.matricule;
                 connectedAgentBrigade = userInfo.brigade;
+                connectedAgentPouvoir = userInfo.pouvoir
             })
             .catch(error => console.error('Erreur chargement agents:', error));
         }
