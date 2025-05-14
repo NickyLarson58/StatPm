@@ -89,7 +89,7 @@ public class CartographieController {
     @GetMapping("/api/signalements")
     @ResponseBody
     public List<SignalementDTO> getSignalements(@RequestParam(required = false) String statut) {
-        List<Signalement> signalements = (statut != null) ? signalementRepository.findByStatut(statut) : signalementRepository.findAll();
+        List<Signalement> signalements = (statut != null) ? signalementRepository.findByStatut(statut) : signalementRepository.findByStatut("visible");
         return signalements.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
@@ -225,5 +225,15 @@ public class CartographieController {
             dto.setPhotos(signalement.getPhotos().stream().map(Photo::getChemin).collect(Collectors.toList()));
         }
         return dto;
+    }
+
+    @PutMapping("/api/signalements/{id}/archive")
+    @ResponseBody
+    public ResponseEntity<?> archiverSignalement(@PathVariable Long id) {
+        Signalement signalement = signalementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Signalement non trouvé"));
+        signalement.setStatut("nonVisible");
+        signalementRepository.save(signalement);
+        return ResponseEntity.ok().build();
     }
 }

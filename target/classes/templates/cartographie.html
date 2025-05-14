@@ -313,7 +313,8 @@
             try {
                 const response = await fetch('/api/signalements');
                 const signalements = await response.json();
-                let signalementsFiltres = signalements;
+                // Filtrage pour n'afficher que les signalements visibles
+                let signalementsFiltres = signalements.filter(s => s.statut === "visible");
                 if (type && type !== 'tous') {
                     signalementsFiltres = signalements.filter(s => {
                         // On mappe la valeur du type du signalement (numérique ou texte) vers le libellé
@@ -643,34 +644,54 @@
             initMap();
             await chargerTypesSignalement();
         };
+
+        function archiverSignalement(id) {
+            Swal.fire({
+                title: 'Archiver ce signalement ?',
+                text: 'Cette action rendra le signalement invisible sur la carte.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Oui, archiver',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/signalements/${id}/archive`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            Swal.fire({
+                                title: 'Archivé !',
+                                text: 'Le signalement a été archivé avec succès.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            chargerSignalements();
+                        } else {
+                            Swal.fire({
+                                title: 'Erreur',
+                                text: "Impossible d'archiver le signalement.",
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Erreur',
+                            text: "Une erreur s'est produite lors de l'archivage.",
+                            icon: 'error'
+                        });
+                    });
+                }
+            });
+        }
     </script>
 </body>
 </html>
 
-async function retirerSignalementCarte(id) {
-    // Ici, vous pouvez envoyer une requête pour marquer le signalement comme inexistant côté serveur
-    // ou simplement le retirer de la carte côté client
-    // Exemple côté client :
-    markers = markers.filter(marker => {
-        if (marker.options && marker.options.title && marker.options.title.includes(id)) {
-            map.removeLayer(marker);
-            return false;
-        }
-        return true;
-    });
-    // Recharge la liste sans ce signalement
-    await chargerSignalements();
-}
-
-async function supprimerSignalementDefinitif(id) {
-    try {
-        const response = await fetch(`/api/signalements/${id}`, { method: 'DELETE' });
-        if (response.ok) {
-            await chargerSignalements();
-        } else {
-            Swal.fire('Erreur', 'La suppression a échoué.', 'error');
-        }
-    } catch (error) {
-        Swal.fire('Erreur', 'Une erreur est survenue.', 'error');
-    }
-}
