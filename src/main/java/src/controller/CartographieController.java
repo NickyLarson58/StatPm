@@ -255,7 +255,7 @@ public class CartographieController {
                     Path filePath = Paths.get(UPLOAD_DIR, photo.getChemin());
                     Files.deleteIfExists(filePath);
                 } catch (IOException e) {
-                    // Log erreur mais continuer la suppression
+                    System.err.println("Erreur lors de la suppression du fichier photo: " + photo.getChemin() + " - " + e.getMessage());
                 }
                 photoRepository.delete(photo);
             }
