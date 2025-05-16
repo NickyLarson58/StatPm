@@ -210,8 +210,9 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="photos">Ajouter des photos</label>
-                            <input type="file" class="form-control" id="photos" name="files" multiple accept="image/*">
+                            <input type="file" class="form-control" id="photos" name="files" multiple accept="image/*" onchange="previewSelectedPhotos(event)">
                         </div>
+                        <div id="photos-preview" class="photo-gallery"></div>
                         <button type="submit" class="tool-button w-100">Envoyer</button>
                     </form>
                 </div>
@@ -229,6 +230,24 @@
         let selectedLocation = null;
         
         loadInitialData();
+
+
+        function previewSelectedPhotos(event) {
+            const files = event.target.files;
+            const gallery = document.getElementById('photos-preview');
+            gallery.innerHTML = '';
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Use backticks for template literals
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'photo-thumbnail';
+                    gallery.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
         
         // Définition des icônes personnalisées pour chaque type de signalement
         const typeIcons = {
@@ -405,19 +424,19 @@
                                             <label class="form-label">Photos existantes</label>
                                             <div id="photos${s.id}" class="photo-gallery">
                                                 ${Array.isArray(s.photos) && s.photos.length > 0 ?
-                                                    s.photos.map(photo => `<img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="console.log('Miniature cliquée:', this.src); openPhotoModal(this.src)">`).join('\n')
+                                                    s.photos.map(photo => `<div class='photo-thumb-wrapper' style='position:relative;display:inline-block;'><img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)"><span class='remove-photo-btn' style='position:absolute;top:2px;right:2px;color:red;cursor:pointer;font-size:20px;' onclick='removeExistingPhoto(event,${s.id},"${photo}")'>&times;</span></div>`).join('\n')
                                                     : '<p class="text-muted">Aucune photo</p>'}
                                             </div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Ajouter des photos</label>
-                                            <input type="file" class="form-control" id="photos" name="files" multiple accept="image/*">
+                                            <input type="file" class="form-control" id="photosInput${s.id}" name="files" multiple accept="image/*" onchange="previewModalSelectedPhotos(event,${s.id})">
+                                        </div>
+                                        <div id="photos-preview-modal${s.id}" class="photo-gallery"></div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="tool-button">Sauvegarder</button>
                                         </div>
                                     </form>
-                                </div>
-                                <div class="modal-footer border-top border-secondary">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Fermer" tabindex="0">Fermer</button>
-                                    <button type="submit" class="btn btn-primary" form="formSignalement${s.id}" aria-label="Sauvegarder" tabindex="0">Sauvegarder</button>
                                 </div>
                             </div>
                         </div>
@@ -763,6 +782,62 @@
                 }
             });
         }
+
+                // Ajout de la gestion dynamique des miniatures dans la modal Détails du Signalement
+        function previewModalSelectedPhotos(event, signalementId) {
+            const files = event.target.files;
+            const gallery = document.getElementById('photos' + signalementId);
+            // On conserve les miniatures déjà ajoutées lors de cette session (non sauvegardées)
+            let previews = gallery.querySelectorAll('.photo-thumbnail.new');
+            previews.forEach(p => p.parentNode.remove());
+            Array.from(files).forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Création du conteneur pour miniature + croix
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'photo-thumb-wrapper';
+                    wrapper.style.position = 'relative';
+                    wrapper.style.display = 'inline-block';
+                    // Miniature
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'photo-thumbnail new';
+                    img.setAttribute('data-file-idx', idx);
+                    // Croix de suppression
+                    const removeBtn = document.createElement('span');
+                    removeBtn.className = 'remove-photo-btn';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '2px';
+                    removeBtn.style.right = '2px';
+                    removeBtn.style.color = 'red';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.fontSize = '20px';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.onclick = function(ev) {
+                        ev.stopPropagation();
+                        // Supprimer la miniature
+                        wrapper.remove();
+                        // Supprimer le fichier du FileList (nécessite de recréer un nouvel input file)
+                        removeFileFromInput('photosInput' + signalementId, idx);
+                    };
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(removeBtn);
+                    gallery.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        // Fonction utilitaire pour supprimer un fichier du FileList (recréation de l'input)
+        function removeFileFromInput(inputId, idxToRemove) {
+            const input = document.getElementById(inputId);
+            const dt = new DataTransfer();
+            Array.from(input.files).forEach((file, idx) => {
+                if (idx !== idxToRemove) {
+                    dt.items.add(file);
+                }
+            });
+            input.files = dt.files;
+        }
     </script>
 </body>
 </html>
@@ -792,4 +867,6 @@
 </script>
 </body>
 </html>
+
+
 
