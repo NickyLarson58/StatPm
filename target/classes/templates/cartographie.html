@@ -540,7 +540,11 @@
             try {
                 const formData = new FormData();
                 formData.append('description', document.getElementById(`description${id}`).value);
-                
+                // Ajout de la récupération de la nouvelle adresse modifiée
+                const adresseInput = document.getElementById(`adresse${id}`);
+                if (adresseInput) {
+                    formData.append('adresse', adresseInput.value);
+                }
                 const filesInput = document.querySelector(`#modalSignalement${id} input[type=file]`);
                 console.log('filesInput.files:', filesInput.files); // Ajout du log ici
 
