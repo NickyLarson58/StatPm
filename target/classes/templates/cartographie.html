@@ -276,9 +276,18 @@
         }
 
         function placeMarker(location) {
+            const selectedType = document.getElementById('type');
+            if (!selectedType.value) {
+                Swal.fire({
+                    title: 'Type requis',
+                    text: 'Veuillez sélectionner un type de signalement',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
             markers.forEach(m => map.removeLayer(m));
             markers = [];
-            const selectedType = document.getElementById('type');
             const typeText = selectedType.options[selectedType.selectedIndex].textContent;
             const icon = typeIcons[typeText] || new L.Icon.Default();
             let marker = L.marker([location.lat, location.lng], {icon: icon}).addTo(map);
