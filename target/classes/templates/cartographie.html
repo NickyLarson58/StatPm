@@ -159,6 +159,30 @@
             outline: 3px solid #0056b3;
             outline-offset: 2px;
         }
+        .remove-photo-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    color: #ff3333;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+    z-index: 10;
+    border: 2px solid #ff3333;
+}
+.remove-photo-btn:hover {
+    background-color: #d32f2f;
+    color: #fff;
+    border-color: #fff;
+}
     </style>
 </head>
 <body>
@@ -204,7 +228,7 @@
                             <label class="form-label" for="photos">Nouvelles photos</label>
                             <!-- Modal pour afficher la photo en grand -->
                             <div class="photo-modal" id="photoModalCustom" onclick="closePhotoModal(event)" style="display:none; width:800px; height:600px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000; border-radius:10px;">
-                              <span class="close" style="position:absolute; top:30px; right:40px; color:#fff; font-size:40px; cursor:pointer;" onclick="closePhotoModal(event)">&times;</span>
+                              <span class='close' style="position:absolute; top:2px; right:2px; color:red; cursor:pointer; font-size:24px; font-weight:bold; background-color:rgba(0,0,0,0.7); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center;" onclick="closePhotoModal(event)">&times;</span>
                               <img src="" alt="Photo en grand format" id="photoModalImg" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 20px #000; display:none;">
                             </div>
                         </div>
@@ -424,8 +448,8 @@
                                             <label class="form-label">Photos existantes</label>
                                             <div id="photos${s.id}" class="photo-gallery">
                                                 ${Array.isArray(s.photos) && s.photos.length > 0 ?
-                                                    s.photos.map(photo => `<div class='photo-thumb-wrapper' style='position:relative;display:inline-block;'><img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)"><span class='remove-photo-btn' style='position:absolute;top:2px;right:2px;color:red;cursor:pointer;font-size:20px;' onclick='removeExistingPhoto(event,${s.id},"${photo}")'>&times;</span></div>`).join('\n')
-                                                    : '<p class="text-muted">Aucune photo</p>'}
+    s.photos.map(photo => `<div class='photo-thumb-wrapper' style='position:relative;display:inline-block;'><img src="/api/signalements/${s.id}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)"><span class='remove-photo-btn' onclick='removeExistingPhoto(event,${s.id},"${photo}")'>&times;</span></div>`).join('\n')
+    : '<p class="text-muted">Aucune photo</p>'}
                                             </div>
                                         </div>
                                         <div class="mb-3">
@@ -873,7 +897,7 @@
                                         const photosDiv = document.getElementById(`photos${idSignalement}`);
                                         if (photosDiv) {
                                             if (Array.isArray(signalement.photos) && signalement.photos.length > 0) {
-                                                photosDiv.innerHTML = signalement.photos.map(photo => `<div class='photo-thumb-wrapper' style='position:relative;display:inline-block;'><img src="/api/signalements/${idSignalement}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)"><span class='remove-photo-btn' style='position:absolute;top:2px;right:2px;color:red;cursor:pointer;font-size:20px;' onclick='removeExistingPhoto(event,${idSignalement},"${photo}")'>&times;</span></div>`).join('\n');
+                                                photosDiv.innerHTML = signalement.photos.map(photo => `<div class='photo-thumb-wrapper' style='position:relative;display:inline-block;'><img src="/api/signalements/${idSignalement}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)"><span class='remove-photo-btn' onclick='removeExistingPhoto(event,${idSignalement},"${photo}")'>&times;</span></div>`).join('\n');
                                             } else {
                                                 photosDiv.innerHTML = '<p class="text-muted">Aucune photo</p>';
                                             }
