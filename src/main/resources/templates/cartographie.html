@@ -866,7 +866,19 @@
                             text: 'La photo a été supprimée.',
                             icon: 'success',
                             didClose: () => {
-                                chargerSignalements();
+                                // Rafraîchir uniquement la galerie de photos de la modal concernée
+                                fetch(`/api/signalements/${idSignalement}`)
+                                    .then(res => res.json())
+                                    .then(signalement => {
+                                        const photosDiv = document.getElementById(`photos${idSignalement}`);
+                                        if (photosDiv) {
+                                            if (Array.isArray(signalement.photos) && signalement.photos.length > 0) {
+                                                photosDiv.innerHTML = signalement.photos.map(photo => `<div class='photo-thumb-wrapper' style='position:relative;display:inline-block;'><img src="/api/signalements/${idSignalement}/photos/${photo}" class="photo-thumbnail" loading="lazy" alt="Photo du signalement" onclick="openPhotoModal(this.src)"><span class='remove-photo-btn' style='position:absolute;top:2px;right:2px;color:red;cursor:pointer;font-size:20px;' onclick='removeExistingPhoto(event,${idSignalement},"${photo}")'>&times;</span></div>`).join('\n');
+                                            } else {
+                                                photosDiv.innerHTML = '<p class="text-muted">Aucune photo</p>';
+                                            }
+                                        }
+                                    });
                             }
                         });
                     } else {
