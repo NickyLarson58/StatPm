@@ -1743,3 +1743,13 @@
 2025-05-17 12:27:32 [http-nio-8082-exec-1] INFO  src.service.LoggingService - [2025-05-17 12:27:32] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Agent details retrieved successfully
 2025-05-17 12:27:32 [http-nio-8082-exec-1] DEBUG src.service.LoggingService - [2025-05-17 12:27:32] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Récupération du pouvoir: admin
 2025-05-17 12:27:52 [http-nio-8082-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'GET' not supported]
+2025-05-17 13:50:28 [http-nio-8082-exec-4] INFO  src.service.LoggingService - [2025-05-17 13:50:28] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Connexion réussie
+2025-05-17 13:50:28 [http-nio-8082-exec-4] INFO  src.service.LoggingService - [2025-05-17 13:50:28] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Executing SQL query for agent details
+2025-05-17 13:50:28 [http-nio-8082-exec-4] INFO  src.service.LoggingService - [2025-05-17 13:50:28] Type: AUTH, Matricule: 56020, Location: ./documents/destination - SQL results - nom: BOUZEBOUDJA, prenom: Mansour, brigade: ENCADREMENT
+2025-05-17 13:50:28 [http-nio-8082-exec-4] INFO  src.service.LoggingService - [2025-05-17 13:50:28] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Agent details retrieved successfully
+2025-05-17 13:50:28 [http-nio-8082-exec-4] DEBUG src.service.LoggingService - [2025-05-17 13:50:28] Type: AUTH, Matricule: 56020, Location: ./documents/destination - Récupération du pouvoir: admin
+2025-05-17 14:00:29 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-17 14:00:29] Type: AUTH, Matricule: 101033, Location: ./documents/destination - Connexion réussie
+2025-05-17 14:00:29 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-17 14:00:29] Type: AUTH, Matricule: 101033, Location: ./documents/destination - Executing SQL query for agent details
+2025-05-17 14:00:29 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-17 14:00:29] Type: AUTH, Matricule: 101033, Location: ./documents/destination - SQL results - nom: KOSTADINOV, prenom: Gueorgui, brigade: BRIGADE 2
+2025-05-17 14:00:29 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-17 14:00:29] Type: AUTH, Matricule: 101033, Location: ./documents/destination - Agent details retrieved successfully
+2025-05-17 14:00:29 [http-nio-8082-exec-2] DEBUG src.service.LoggingService - [2025-05-17 14:00:29] Type: AUTH, Matricule: 101033, Location: ./documents/destination - Récupération du pouvoir: userPm

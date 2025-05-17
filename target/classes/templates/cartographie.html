@@ -105,18 +105,21 @@
         }
 
         .photo-modal {
-            display: none;
+            display: flex;
             position: fixed;
             top: 50%;
             left: 50%;
-            width: 800px;
-            height: 600px;
+            width: 90vw;
+            max-width: 800px;
+            height: 80vh;
+            max-height: 600px;
             background-color: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
             transform: translate(-50%, -50%);
             border-radius: 10px;
+            overflow: auto;
         }
 
         .photo-modal img {
@@ -457,9 +460,10 @@
                                             <input type="file" class="form-control" id="photosInput${s.id}" name="files" multiple accept="image/*" onchange="previewModalSelectedPhotos(event,${s.id})">
                                         </div>
                                         <div id="photos-preview-modal${s.id}" class="photo-gallery"></div>
-                                        <div class="modal-footer">
-                                            <button type="submit" class="tool-button">Sauvegarder</button>
-                                        </div>
+                                        <div class="modal-footer border-top border-secondary">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+    <button type="submit" class="btn btn-success">Enregistrer</button>
+</div>
                                     </form>
                                 </div>
                             </div>
