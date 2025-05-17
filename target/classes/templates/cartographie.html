@@ -516,9 +516,9 @@
                                     if (modalGestion) {
                                         modalGestion.hide();
                                     }
+                                    chargerSignalements();
                                 }
                             });
-                            chargerSignalements();
                         } else {
                             Swal.fire({
                                 title: 'Erreur',
@@ -594,10 +594,12 @@
                         title: 'Succès',
                         text: 'Modifications enregistrées avec succès',
                         icon: 'success',
-                        confirmButtonText: 'OK'
+                        confirmButtonText: 'OK',
+                        didClose: () => {
+                            chargerSignalements();
+                        }
                     });
                     fermerModal(id);
-                    chargerSignalements();
                 } else {
                     throw new Error('Erreur lors de la sauvegarde');
                 }
@@ -761,9 +763,11 @@
                                 text: 'Le signalement a été archivé avec succès.',
                                 icon: 'success',
                                 timer: 1500,
-                                showConfirmButton: false
+                                showConfirmButton: false,
+                                didClose: () => {
+                                    chargerSignalements();
+                                }
                             });
-                            chargerSignalements();
                         } else {
                             Swal.fire({
                                 title: 'Erreur',
@@ -838,6 +842,44 @@
             });
             input.files = dt.files;
         }
+
+    function removeExistingPhoto(event, idSignalement, photoName) {
+        event.stopPropagation();
+        Swal.fire({
+            title: 'Confirmer la suppression',
+            text: 'Voulez-vous vraiment supprimer cette photo ? Cette action est irréversible.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/api/signalements/${idSignalement}/photos/${encodeURIComponent(photoName)}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            title: 'Supprimé !',
+                            text: 'La photo a été supprimée.',
+                            icon: 'success',
+                            didClose: () => {
+                                chargerSignalements();
+                            }
+                        });
+                    } else {
+                        Swal.fire('Erreur', 'La suppression a échoué.', 'error');
+                    }
+                })
+                .catch(() => {
+                    Swal.fire('Erreur', 'La suppression a échoué.', 'error');
+                });
+            }
+        });
+    }
+    // Fonction pour ouvrir la modal de gestion du signalement
     </script>
 </body>
 </html>

@@ -8,9 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 import src.model.Signalement;
 import src.repository.SignalementRepository;
 import org.springframework.ui.Model;
-
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import src.model.Photo;
 import src.repository.PhotoRepository;
 import src.model.dto.SignalementDTO;
@@ -210,6 +206,41 @@ public class CartographieController {
                     .body(fileContent);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Erreur lors de la récupération de la photo");
+        }
+    }
+
+    @DeleteMapping("/api/signalements/{id}/photos/{photo}")
+    @ResponseBody
+    public ResponseEntity<?> deletePhoto(@PathVariable Long id, @PathVariable String photo) {
+        Signalement signalement = signalementRepository.findById(id).orElse(null);
+        if (signalement == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Photo photoToDelete = null;
+        if (signalement.getPhotos() != null) {
+            for (Photo p : signalement.getPhotos()) {
+                if (p.getChemin().equals(photo)) {
+                    photoToDelete = p;
+                    break;
+                }
+            }
+        }
+        if (photoToDelete == null) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            Path filePath = Paths.get(UPLOAD_DIR, photoToDelete.getChemin());
+            Files.deleteIfExists(filePath);
+            // Suppression de l'entrée dans la base de données
+            photoRepository.delete(photoToDelete);
+            // Retirer la photo de la liste du signalement (si nécessaire)
+            if (signalement.getPhotos() != null) {
+                signalement.getPhotos().remove(photoToDelete);
+                signalementRepository.save(signalement);
+            }
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Erreur lors de la suppression de la photo");
         }
     }
 
