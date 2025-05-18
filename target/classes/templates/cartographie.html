@@ -225,11 +225,9 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="description">Description</label>
-                            <textarea class="form-control" id="description" required></textarea>
+                            <textarea class="form-control" id="description" style="min-height: 150px;" rows="6" placeholder="Indiquez le lieu exact de l'emplacement (adresse, repères, etc.). Décrivez en détail la nature de l'intervention ou du signalement (type, volume, état…). Précisez également les mesures déjà prises ou les services déjà informés (BIR, SPU, Métropol, service des encombrants, etc.)." required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="photos">Nouvelles photos</label>
-                            <!-- Modal pour afficher la photo en grand -->
                             <div class="photo-modal" id="photoModalCustom" onclick="closePhotoModal(event)" style="display:none; width:800px; height:600px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000; border-radius:10px;">
                               <span class='close' style="position:absolute; top:2px; right:2px; color:red; cursor:pointer; font-size:24px; font-weight:bold; background-color:rgba(0,0,0,0.7); border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center;" onclick="closePhotoModal(event)">&times;</span>
                               <img src="" alt="Photo en grand format" id="photoModalImg" style="max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 20px #000; display:none;">
