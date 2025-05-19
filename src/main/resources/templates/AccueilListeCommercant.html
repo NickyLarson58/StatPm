@@ -2,67 +2,494 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title> - Accueil Stat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les commerçants de La Ciotat - Accueil</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        .header {
-            background: linear-gradient(to right, #0056b3, #ffffff, #d32f2f);
-            padding: 80px;
-            margin-bottom: 10px;
-            border: 4px solid #000;
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #d32f2f;
+            --dark-blue: #001f3f;
+            --light-blue: #a0d8f1;
+            --light-sand: #f9e9c3;
         }
-        .header h1 {
-            font-family: 'mokoto', sans-serif;
-            font-size: 3.5em;
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--dark-blue);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            position: relative;
+            height: 30vh;
+            background-color: var(--light-blue);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-text {
+            position: relative;
+            z-index: 2;
+            text-shadow: 2px 2px 4px rgb(255, 255, 255);
             text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .commercial-title {
+            font-size: 3em;
+            font-weight: 900;
+            color: white;
             margin: 0;
-            color: #ffffff;
+            transition: all 0.5s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            line-height: 1.5;
+            text-shadow: 3px 3px 6px rgba(236, 186, 49, 0.966), 
+                         0 0 10px rgba(255, 255, 255, 0.5);
+            padding: 0 20px;
         }
+
+        .sun {
+            position: absolute;
+            top: 30px;
+            left: 100px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #ffd700 30%, #ff9500 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px #ff9500;
+            z-index: 1;
+            animation: pulse 3s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px #ff9500; }
+            100% { transform: scale(1.1); box-shadow: 0 0 60px #ff9500; }
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="%230056b3" opacity=".25"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" fill="%230056b3" opacity=".5"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%230056b3"/></svg>');
+            background-size: cover;
+            animation: wave 10s linear infinite;
+            z-index: 3;
+        }
+
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1000px; }
+        }
+
+        .bird {
+            position: absolute;
+            top: 80px;
+            font-size: 18px;
+            color: #333;
+            animation: fly 20s linear infinite;
+            z-index: 1;
+        }
+
+        .nuage {
+            position: absolute;
+            top: 80px;
+            font-size: 18px;
+            color: #333;
+            animation: fly 20s linear infinite;
+            z-index: 1;
+        }
+
+        .voilier {
+            position: absolute;
+            top: 133px;
+            font-size: 18px;
+            color: #333;
+            animation: fly 20s linear infinite;
+        }
+
+        .bird1 { left: 5%; animation-delay: 0s; }
+        .nuage1 { left: 10%; animation-delay: -2s; }
+        .bird2 { left: 15%; animation-delay: -7s; }
+        .nuage2 { left: 20%; animation-delay: -9s; }
+        .bird3 { left: 55%; animation-delay: -14s; }
+        .nuage3 { left: 65%; animation-delay: -16s; }
+        .voilier1 { left: 2%; animation-delay: 0s; }
+
+        @keyframes fly {
+            0% { transform: translateX(-50px) translateY(0); }
+            25% { transform: translateX(calc(25vw)) translateY(-20px); }
+            50% { transform: translateX(calc(50vw)) translateY(0); }
+            75% { transform: translateX(calc(75vw)) translateY(-20px); }
+            100% { transform: translateX(calc(100vw + 50px)) translateY(0); }
+        }
+
         .action-card {
-            background-color: #ffffff;
-            border: 3px solid #000;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
             text-align: center;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 50;
+            border: none;
         }
+
+        .action-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
         .btn-stat {
-            background-color: #d32f2f;
-            color: #ffffff;
-            font-size: 1.2em;
-            padding: 15px 30px;
-            margin: 10px;
-            font-weight: bold;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
         }
-        .bg-light {
-            background: linear-gradient(to bottom, #0056b3, #ffffff, #d32f2f);
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-stat:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-stat:active {
+            transform: translateY(1px);
+        }
+
+        .btn-stat:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-stat:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            padding: 5px;
+            text-align: left;
+            background-color: rgba(0, 31, 63, 0.9);
+            width: auto;
+            z-index: 1000;
+        }
+
+        .card-container {
+            margin-top: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .promo-image {
+            max-width: 200px;
+            margin-bottom: 20px;
+            transition: all 0.5s ease;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .promo-image:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 15px 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .navbar-nav .nav-link {
+            color: white;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--light-sand);
+            transform: translateY(-2px);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .commercial-title {
+                font-size: 2em;
+                letter-spacing: 1px;
+            }
+
+            .sun {
+                width: 70px;
+                height: 70px;
+                top: 30px;
+                left: 30px;
+            }
+
+            .hero-section {
+                height: 40vh;
+            }
+
+            .wave {
+                height: 60px;
+            }
         }
     </style>
 </head>
-<body style="background-color: #001f3f; color: white; font-family: 'Arial', sans-serif; background-size: cover; background-position: center;">
-    <div class="header d-flex justify-content-between align-items-center">
-        <img src="Logo_La_Ciota.png" alt="Logo La Ciotat" style="max-width: 100px; margin-right: 20px;">
-        <h1 style="color: #001f3f; text-align: center; flex-grow: 1;">LISTE DES COMMERÇANTS</h1>
-        <img src="Logo_La_Ciota.png" alt="Logo La Ciotat" style="max-width: 100px; margin-left: 20px;">
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-store me-2"></i>La Ciotat Commerce</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Dynamic Elements -->
+    <div class="hero-section">
+        <div class="sun"></div>
+        <div class="city-skyline"></div>
+
+        <div class="bird bird1"><img src="mouette.png" alt="Goéland" style="height:40px;width:auto;"></div>
+        <div class="nuage nuage1"><img src="nuage.png" alt="nuage" style="height:40px;width:auto;"></div>
+        <div class="bird bird2"><img src="mouette.png" alt="Goéland" style="height:40px;width:auto;"></div>
+        <div class="nuage nuage2"><img src="nuage.png" alt="nuage" style="height:40px;width:auto;"></div>
+        <div class="bird bird3"><img src="mouette.png" alt="Goéland" style="height:40px;width:auto;"></div>
+        <div class="nuage nuage3"><img src="nuage.png" alt="nuage" style="height:40px;width:auto;"></div>
+        <div class="voilier voilier1"><img src="voilier.png" alt="nuage" style="height:40px;width:auto;"></div>
+        <div class="header-text animate__animated animate__fadeIn">
+            <h1 class="commercial-title">LES COMMERCES<br>DE LA CIOTAT</h1>
+        </div>
+        <div class="wave"></div>
     </div>
-    <div class="container">
+
+    <!-- Main Content -->
+    <div class="container card-container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="action-card"> 
-                    <img src="Promo3.bmp" alt="La Ciotat" class="img-fluid mb-4" style="max-width: 200px;"> 
+                <div class="action-card animate__animated animate__fadeInUp">
                     <div class="d-grid gap-3">
-                        <a style="background-color: #d32f2f;" href="/travaux" class="btn btn-stat">DÉCLARER UN NOUVEAU COMMERCE</a>
-                        <a style="background-color: #0056b3;" href="/travaux" class="btn btn-stat">CONSULTER LA LISTE DES COMMERÇANTS</a>
+                        <a href="/travaux" class="btn btn-success btn-stat">
+                            <i class="fas fa-plus-circle me-2"></i>DÉCLARER UN NOUVEAU COMMERCE
+                        </a>
+                        <a href="/travaux" class="btn btn-primary btn-stat">
+                            <i class="fas fa-list-alt me-2"></i>CONSULTER LA LISTE DES COMMERÇANTS
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
+
+        
     </div>
 
-    <footer  style="position: fixed; bottom: 10px; left: 10px; color: white; font-size: 0.8em; ">
-        Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="mb-0">Réalisation C/S BOUZEBOUDJA Mansour ® 2025™</p>
+                </div>
+            </div>
+        </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set the background image from the provided image
+            const cityImage = document.querySelector('.city-skyline');
+            // We'll use the uploaded image url for this element
+
+
+            // Animate counter numbers
+            const counters = document.querySelectorAll('.counter');
+            const speed = 200;
+
+            counters.forEach(counter => {
+                const animate = () => {
+                    const value = +counter.innerText;
+                    const data = +counter.getAttribute('data-target');
+                    const time = data / speed;
+
+                    if (value < data) {
+                        counter.innerText = Math.ceil(value + time);
+                        setTimeout(animate, 1);
+                    } else {
+                        counter.innerText = data;
+                    }
+                };
+
+                // Set data attribute for animation
+                const finalValue = counter.innerText;
+                counter.innerText = '0';
+                counter.setAttribute('data-target', finalValue);
+
+                animate();
+            });
+
+            // Button click effect
+            const buttons = document.querySelectorAll('.btn-stat');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Prevent default if it's a demo link
+                    if (this.getAttribute('href') === '/travaux') {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: 'En développement',
+                            text: 'Cette fonctionnalité sera bientôt disponible!',
+                            icon: 'info',
+                            confirmButtonColor: '#0056b3'
+                        });
+                    }
+
+                    // Add click effect
+                    let x = e.clientX - e.target.offsetLeft;
+                    let y = e.clientY - e.target.offsetTop;
+
+                    let ripple = document.createElement('span');
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    this.appendChild(ripple);
+
+                    setTimeout(function() {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Parallax effect for sun
+            window.addEventListener('scroll', function() {
+                const scrollPosition = window.pageYOffset;
+                const sun = document.querySelector('.sun');
+
+                if (sun) {
+                    sun.style.transform = `translateY(${scrollPosition * 0.2}px) scale(${1 - scrollPosition * 0.001})`;
+                }
+            });
+
+            // Make the header text style change on scroll
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('.commercial-title');
+                const scrollPosition = window.pageYOffset;
+
+                if (header && scrollPosition > 50) {
+                    header.style.fontSize = '2.5em';
+                } else if (header) {
+                    header.style.fontSize = '3.5em';
+                }
+            });
+
+            // Set the real-time skyline from the image
+            // This would use the actual image from the upload
+            const skyline = document.querySelector('.city-skyline');
+            skyline.style.backgroundImage = 'url("data:image/svg+xml;utf8,<svg viewBox=\'0 0 1200 400\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M0,400 L0,200 L100,200 L150,100 L200,200 L300,200 L350,150 L400,200 L500,200 L550,120 L600,200 L700,200 L750,180 L800,200 L900,200 L950,100 L1000,200 L1100,200 L1150,150 L1200,200 L1200,400 Z\' fill=\'%23001f3f\'/></svg>")';
+        });
+    </script>
 </body>
 </html>
