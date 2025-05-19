@@ -98,25 +98,25 @@
             top: 80px;
             font-size: 18px;
             color: #333;
-            animation: fly 20s linear infinite;
-            z-index: 1;
+            animation: fly 40s linear infinite;
+            z-index: 2;
         }
 
         .nuage {
             position: absolute;
-            top: 80px;
+            top: 20px;
             font-size: 18px;
             color: #333;
-            animation: fly 20s linear infinite;
+            animation: fly2 80s linear infinite;
             z-index: 1;
         }
 
         .voilier {
             position: absolute;
-            top: 133px;
+            top: 170px;
             font-size: 18px;
             color: #333;
-            animation: fly 20s linear infinite;
+            animation: fly2 50s linear infinite;
         }
 
         .bird1 { left: 5%; animation-delay: 0s; }
@@ -129,17 +129,26 @@
 
         @keyframes fly {
             0% { transform: translateX(-50px) translateY(0); }
-            25% { transform: translateX(calc(25vw)) translateY(-20px); }
+            25% { transform: translateX(calc(25vw)) translateY(-60px); }
             50% { transform: translateX(calc(50vw)) translateY(0); }
-            75% { transform: translateX(calc(75vw)) translateY(-20px); }
+            75% { transform: translateX(calc(75vw)) translateY(-40px); }
             100% { transform: translateX(calc(100vw + 50px)) translateY(0); }
+        }
+
+        @keyframes fly2 {
+            0% { transform: translateX(-50px) translateY(0); }
+            25% { transform: translateX(calc(25vw)) translateY(6px); }
+            50% { transform: translateX(calc(50vw)) translateY(0); }
+            75% { transform: translateX(calc(75vw)) translateY(-2px); }
+            100% { transform: translateX(calc(100vw + 5px)) translateY(0); }
         }
 
         .action-card {
             background: linear-gradient(145deg, #ffffff, #f0f0f0);
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            padding: 30px;
+            padding: 80px;
+            margin-top: 50px;
             margin-bottom: 30px;
             text-align: center;
             transform: translateY(0);
@@ -279,17 +288,18 @@
             font-size: 1.5rem;
             color: white;
         }
+        .custom-navbar-text {
+            color: white ;
+            cursor: default;
+            pointer-events: none;
+            text-shadow: 2px 2px 8px #0056b3;
+        }
 
         .navbar-nav .nav-link {
             color: white;
             font-weight: 500;
             margin: 0 10px;
             transition: all 0.3s ease;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: var(--light-sand);
-            transform: translateY(-2px);
         }
 
         .notification-badge {
@@ -335,17 +345,10 @@
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="#"><i class="fas fa-store me-2"></i>La Ciotat Commerce</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                </ul>
-            </div>
-        </div>
-    </nav>
+        <div class="container-fluid text-start">
+            <span class="navbar-brand ms-0 custom-navbar-text"><i class="fas fa-store me-2"></i>La Ciotat Commerce</span>
+    </div>
+</nav>
 
     <!-- Hero Section with Dynamic Elements -->
     <div class="hero-section">
@@ -358,7 +361,7 @@
         <div class="nuage nuage2"><img src="nuage.png" alt="nuage" style="height:40px;width:auto;"></div>
         <div class="bird bird3"><img src="mouette.png" alt="Goéland" style="height:40px;width:auto;"></div>
         <div class="nuage nuage3"><img src="nuage.png" alt="nuage" style="height:40px;width:auto;"></div>
-        <div class="voilier voilier1"><img src="voilier.png" alt="nuage" style="height:40px;width:auto;"></div>
+        <div class="voilier voilier1"><img src="voilier.png" alt="voilier" style="height:60px;width:auto;"></div>
         <div class="header-text animate__animated animate__fadeIn">
             <h1 class="commercial-title">LES COMMERCES<br>DE LA CIOTAT</h1>
         </div>
@@ -387,7 +390,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
+        <div class="container text-start">
             <div class="row">
                 <div class="col-md-12">
                     <p class="mb-0">Réalisation C/S BOUZEBOUDJA Mansour ® 2025™</p>
