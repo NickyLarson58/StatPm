@@ -5,14 +5,13 @@
     <title>Déclarer un nouveau commerce</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
     <style>
         .form-section { background-color: #003366; padding: 20px; margin-bottom: 20px; border-radius: 5px; color: white; }
         .form-label { font-weight: bold; }
         .add-phone-btn { background-color: #d32f2f; color: white; margin-top: 10px; }
         .remove-phone-btn { color: #d32f2f; margin-left: 10px; }
-        .autocomplete-suggestions { position: absolute; background: white; color: #003366; border: 1px solid #ddd; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 1000; width: 100%; }
-        .autocomplete-suggestion { padding: 10px; cursor: pointer; }
-        .autocomplete-suggestion:hover { background-color: #6cddc8; }
+        .ui-autocomplete { background-color: #00FF00 !important; color: black; max-height: 200px; overflow-y: auto; overflow-x: hidden; }
     </style>
 </head>
 <body style="background-color: #001f3f; color: white; font-family: 'Montserrat', sans-serif;">
@@ -75,6 +74,8 @@
         </form>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script>
     // Gestion dynamique des téléphones
     function addPhoneField() {
@@ -85,34 +86,32 @@
         div.innerHTML = `<div class='col'><input type='text' name='telephones[${idx}].nom' class='form-control' placeholder='Nom'></div><div class='col'><input type='text' name='telephones[${idx}].prenom' class='form-control' placeholder='Prénom'></div><div class='col'><input type='text' name='telephones[${idx}].numero' class='form-control' placeholder='Numéro de téléphone'></div><div class='col-auto'><button type='button' class='btn remove-phone-btn' onclick='this.parentNode.parentNode.remove()'><i class='fas fa-trash'></i></button></div>`;
         container.appendChild(div);
     }
-    // Autocomplétion adresse
-    document.addEventListener('DOMContentLoaded', function() {
-        const adresseInput = document.getElementById('adresseCommerce');
-        const suggestionsBox = document.getElementById('adresseSuggestions');
-        adresseInput.addEventListener('input', function() {
-            const query = this.value;
-            if (query.length < 2) { suggestionsBox.style.display = 'none'; return; }
-            fetch('/api/adresses?query=' + encodeURIComponent(query))
-                .then(res => res.json())
-                .then(data => {
-                    suggestionsBox.innerHTML = '';
-                    if (data.length === 0) { suggestionsBox.style.display = 'none'; return; }
-                    data.forEach(addr => {
-                        const div = document.createElement('div');
-                        div.className = 'autocomplete-suggestion';
-                        div.textContent = addr;
-                        div.onclick = function() {
-                            adresseInput.value = addr;
-                            suggestionsBox.style.display = 'none';
-                        };
-                        suggestionsBox.appendChild(div);
-                    });
-                    suggestionsBox.style.display = 'block';
+
+    // Autocomplétion adresse avec jQuery UI
+    $(document).ready(function() {
+        $.ajax({
+            url: '/api/adresses',
+            method: 'GET',
+            success: function(data) {
+                const adressesList = data.map(function(item) {
+                    return item.nomadresse;
                 });
-        });
-        document.addEventListener('click', function(e) {
-            if (!adresseInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                suggestionsBox.style.display = 'none';
+                $("#adresseCommerce").autocomplete({
+                    source: adressesList,
+                    minLength: 2
+                });
+
+                // Validation du champ adresse
+                $("#adresseCommerce").on('blur', function() {
+                    const adresseSaisie = $(this).val().trim();
+                    if (adresseSaisie && !adressesList.includes(adresseSaisie)) {
+                        alert('L\'adresse saisie est incorrecte. Veuillez sélectionner une adresse valide dans la liste.');
+                        $(this).val('');
+                    }
+                });
+            },
+            error: function() {
+                console.error('Erreur lors du chargement des adresses');
             }
         });
     });
