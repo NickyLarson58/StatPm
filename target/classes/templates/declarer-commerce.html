@@ -20,21 +20,21 @@
         <h2>Déclarer un nouveau commerce</h2>
         <form th:action="@{/declarer-commerce}" th:object="${commercant}" method="post">
             <div class="mb-3">
-                <label class="form-label">Nom du commerce</label>
+                <label class="form-label"> Nom du commerce <span style="color: red;"> *</span> </label>
                 <input type="text" class="form-control" th:field="*{nomCommerce}" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Type d'activité</label>
+                <label class="form-label">Type d'activité<span style="color: red;"> *</span></label>
                 <input type="text" class="form-control" th:field="*{typeActivite}" required>
             </div>
             <div class="mb-3 position-relative">
-                <label class="form-label">Adresse du commerce</label>
+                <label class="form-label">Adresse du commerce<span style="color: red;"> *</span></label>
                 <input type="text" class="form-control" id="adresseCommerce" th:field="*{adresseCommerce}" autocomplete="off" required>
                 <div id="adresseSuggestions" class="autocomplete-suggestions" style="display:none;"></div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Jours et heures d'ouverture</label>
-                <input type="text" class="form-control" th:field="*{joursHeuresOuverture}" required>
+                <input type="text" class="form-control" th:field="*{joursHeuresOuverture}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Système de protection</label>
@@ -47,23 +47,23 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Nom du propriétaire</label>
-                <input type="text" class="form-control" th:field="*{nomProprietaire}" required>
+                <input type="text" class="form-control" th:field="*{nomProprietaire}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Prénom du propriétaire</label>
-                <input type="text" class="form-control" th:field="*{prenomProprietaire}" required>
+                <input type="text" class="form-control" th:field="*{prenomProprietaire}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Adresse du propriétaire</label>
-                <input type="text" class="form-control" th:field="*{adresseProprietaire}" required>
+                <input type="text" class="form-control" th:field="*{adresseProprietaire}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Téléphone du propriétaire</label>
-                <input type="text" class="form-control" th:field="*{telephoneProprietaire}" required>
+                <input type="text" class="form-control" th:field="*{telephoneProprietaire}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Mail du propriétaire</label>
-                <input type="email" class="form-control" th:field="*{mailProprietaire}" required>
+                <input type="email" class="form-control" th:field="*{mailProprietaire}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Téléphones (employés/gérants)</label>
