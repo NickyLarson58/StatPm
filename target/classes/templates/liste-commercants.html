@@ -35,10 +35,7 @@
                 <label class="form-label">Nom propriétaire / Gérant</label>
                 <input type="text" class="form-control" name="nomProprietaire" th:value="${param.nomProprietaire}">
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Téléphones</label>
-                <input type="text" class="form-control" name="telephone" th:value="${param.telephone}">
-            </div>
+            
             <div class="col-12 mt-3">
                 <button type="submit" class="btn btn-primary">Filtrer</button>
                 <a th:href="@{/liste-commercants}" class="btn btn-secondary">Réinitialiser</a>

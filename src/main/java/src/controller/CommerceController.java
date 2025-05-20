@@ -50,9 +50,7 @@ public class CommerceController {
     public String filterCommercants(@RequestParam(required = false) String nom,
                                     @RequestParam(required = false) String adresse,
                                     @RequestParam(required = false) String type,
-                                    @RequestParam(required = false) String telephone,
                                     @RequestParam(required = false) String nomProprietaire,
-                                    @RequestParam(required = false) String telephoneProprietaire,
                                     Model model) {
         List<Commercant> commercants;
         if (nom != null && !nom.isEmpty()) {
@@ -61,12 +59,8 @@ public class CommerceController {
             commercants = commercantService.searchByAdresse(adresse);
         } else if (type != null && !type.isEmpty()) {
             commercants = commercantService.searchByTypeActivite(type);
-        } else if (telephone != null && !telephone.isEmpty()) {
-            commercants = commercantService.searchByTelephone(telephone);
         } else if (nomProprietaire != null && !nomProprietaire.isEmpty()) {
             commercants = commercantService.searchByNomProprietaire(nomProprietaire);
-        } else if (telephoneProprietaire != null && !telephoneProprietaire.isEmpty()) {
-            commercants = commercantService.searchByTelephoneProprietaire(telephoneProprietaire);
         } else {
             commercants = commercantService.getAllCommercants();
         }
