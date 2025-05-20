@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des commerçants</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .filter-section { background-color: #003366; padding: 20px; margin-bottom: 20px; border-radius: 5px; color: white; }
+        .table-section { background-color: #f0f8ff; padding: 20px; border-radius: 5px; }
+        .form-label { font-weight: bold; }
+    </style>
+</head>
+<body style="background: linear-gradient(to bottom, #add8e6, #003366); color: #003366; font-family: 'Montserrat', sans-serif;">
+<div class="container mt-5">
+    <div class="filter-section">
+        <h2>Filtres de recherche</h2>
+        <form th:action="@{/filtrer-commercants}" method="get" class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Nom du commerce</label>
+                <input type="text" class="form-control" name="nom" th:value="${param.nom}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Adresse</label>
+                <input type="text" class="form-control" name="adresse" th:value="${param.adresse}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Type d'activité</label>
+                <input type="text" class="form-control" name="type" th:value="${param.type}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Téléphone</label>
+                <input type="text" class="form-control" name="telephone" th:value="${param.telephone}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Nom propriétaire</label>
+                <input type="text" class="form-control" name="nomProprietaire" th:value="${param.nomProprietaire}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Téléphone propriétaire</label>
+                <input type="text" class="form-control" name="telephoneProprietaire" th:value="${param.telephoneProprietaire}">
+            </div>
+            <div class="col-12 mt-3">
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+                <a th:href="@{/liste-commercants}" class="btn btn-secondary">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+    <div class="table-section">
+        <h2>Liste des commerçants</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom du commerce</th>
+                    <th>Type d'activité</th>
+                    <th>Adresse</th>
+                    <th>Jours/Heures ouverture</th>
+                    <th>Système protection</th>
+                    <th>Propriétaire</th>
+                    <th>Téléphones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="commercant : ${commercants}">
+                    <td th:text="${commercant.nomCommerce}"></td>
+                    <td th:text="${commercant.typeActivite}"></td>
+                    <td th:text="${commercant.adresseCommerce}"></td>
+                    <td th:text="${commercant.joursHeuresOuverture}"></td>
+                    <td th:text="${commercant.systemeProtection}"></td>
+                    <td>
+                        <span th:text="${commercant.nomProprietaire}"></span> <span th:text="${commercant.prenomProprietaire}"></span><br>
+                        <span th:text="${commercant.telephoneProprietaire}"></span><br>
+                        <span th:text="${commercant.mailProprietaire}"></span>
+                    </td>
+                    <td>
+                        <ul>
+                            <li th:each="tel : ${commercant.telephones}" th:text="${tel.nom + ' ' + tel.prenom + ' : ' + tel.numero}"></li>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
