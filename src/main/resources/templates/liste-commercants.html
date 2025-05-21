@@ -70,9 +70,11 @@
                     </td>
                     <td>
                         <ul>
-                            <li th:each="tel : ${commercant.telephones}" th:utext="${tel.statut + ':<br/>'  + tel.nom + ' <br/> ' + tel.prenom + ' <br/> ' + tel.numero}">
-</li>
+                            <li th:each="tel : ${commercant.telephones}" th:utext="${tel.statut + ':<br/>'  + tel.nom + ' <br/> ' + tel.prenom + ' <br/> ' + tel.numero}"></li>
                         </ul>
+                    </td>
+                    <td>
+                        <a th:href="@{'/consulter-commerce/' + ${commercant.id}}" class="btn btn-info btn-sm">Consulter</a>
                     </td>
                 </tr>
             </tbody>
