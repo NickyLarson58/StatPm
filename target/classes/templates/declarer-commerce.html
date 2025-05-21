@@ -39,10 +39,10 @@
             <div class="mb-3">
                 <label class="form-label">Système de protection</label>
                 <select class="form-control" th:field="*{systemeProtection}">
-                    <option value="Vidéo">Aucun</option>
+                    <option value="Aucun">Aucun</option>
                     <option value="Vidéo">Vidéo</option>
                     <option value="Alarme">Alarme</option>
-                    <option value="Alarme">Vidéo & Alarme</option>
+                    <option value="Vidéo & Alarme">Vidéo & Alarme</option>
                 </select>
             </div>
             <div class="mb-3">
@@ -83,7 +83,16 @@
         const idx = container.children.length;
         const div = document.createElement('div');
         div.className = 'row mb-2';
-        div.innerHTML = `<div class='col'><input type='text' name='telephones[${idx}].nom' class='form-control' placeholder='Nom'></div><div class='col'><input type='text' name='telephones[${idx}].prenom' class='form-control' placeholder='Prénom'></div><div class='col'><input type='text' name='telephones[${idx}].numero' class='form-control' placeholder='Numéro de téléphone'></div><div class='col-auto'><button type='button' class='btn remove-phone-btn' onclick='this.parentNode.parentNode.remove()'><i class='fas fa-trash'></i></button></div>`;
+        div.innerHTML =`<div class='col'><input type='text' name='telephones[${idx}].nom' class='form-control' placeholder='Nom'></div>
+                        <div class='col'><input type='text' name='telephones[${idx}].prenom' class='form-control' placeholder='Prénom'></div>
+                        <div class='col'><input type='text' name='telephones[${idx}].numero' class='form-control' placeholder='Numéro de téléphone'></div>
+                        <div class='col'><select name='telephones[${idx}].statut' class='form-control' placeholder='Statut'>
+                                <option value="Employe">Employé</option>
+                                <option value="Gérant">Gérant</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class='col-auto'><button type='button' class='btn remove-phone-btn' onclick='this.parentNode.parentNode.remove()'><i class='fas fa-trash'></i></button></div>`;
         container.appendChild(div);
     }
 

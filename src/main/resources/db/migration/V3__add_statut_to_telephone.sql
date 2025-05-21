@@ -1,0 +1,1 @@
+ALTER TABLE telephone ADD COLUMN statut VARCHAR(255);

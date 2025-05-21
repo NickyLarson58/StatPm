@@ -70,7 +70,8 @@
                     </td>
                     <td>
                         <ul>
-                            <li th:each="tel : ${commercant.telephones}" th:text="${tel.nom + ' ' + tel.prenom + ' : ' + tel.numero}"></li>
+                            <li th:each="tel : ${commercant.telephones}" th:utext="${tel.statut + ':<br/>'  + tel.nom + ' <br/> ' + tel.prenom + ' <br/> ' + tel.numero}">
+</li>
                         </ul>
                     </td>
                 </tr>

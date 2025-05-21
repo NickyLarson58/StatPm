@@ -19,6 +19,14 @@ public class CommercantService {
     private TelephoneRepository telephoneRepository;
 
     public Commercant saveCommercant(Commercant commercant) {
+        if (commercant.getTelephones() != null) {
+            for (Telephone tel : commercant.getTelephones()) {
+                tel.setCommerce(commercant);
+                if (tel.getStatut() == null) {
+                    tel.setStatut("inconnu"); // Valeur par défaut si besoin
+                }
+            }
+        }
         return commercantRepository.save(commercant);
     }
 
