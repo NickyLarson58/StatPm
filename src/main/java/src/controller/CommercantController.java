@@ -38,6 +38,7 @@ public class CommercantController {
     @PostMapping("/modifier-commerce/{id}")
     public String modifierCommerce(@PathVariable Long id, Commercant commercant) {
         commercant.setId(id);
+        commercant.setNumeroAdresse(commercant.getNumeroAdresse());
         if (commercant.getTelephones() != null) {
             for (var tel : commercant.getTelephones()) {
                 tel.setCommerce(commercant);

@@ -27,6 +27,7 @@ public class CommercantService {
                 }
             }
         }
+        commercant.setNumeroAdresse(commercant.getNumeroAdresse());
         return commercantRepository.save(commercant);
     }
 

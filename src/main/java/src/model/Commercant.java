@@ -19,6 +19,8 @@ public class Commercant {
     private String adresseProprietaire;
     private String telephoneProprietaire;
     private String mailProprietaire;
+    @Column(name = "numAdresseCommerce")
+    private String numeroAdresse;
 
     @OneToMany(mappedBy = "commerce", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Telephone> telephones;
@@ -48,4 +50,6 @@ public class Commercant {
     public void setMailProprietaire(String mailProprietaire) { this.mailProprietaire = mailProprietaire; }
     public List<Telephone> getTelephones() { return telephones; }
     public void setTelephones(List<Telephone> telephones) { this.telephones = telephones; }
+    public String getNumeroAdresse() { return numeroAdresse; }
+    public void setNumeroAdresse(String numeroAdresse) { this.numeroAdresse = numeroAdresse; }
 }

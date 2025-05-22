@@ -35,6 +35,7 @@ public class CommerceController {
             }
             commercant.setTelephones(telephones);
         }
+        commercant.setNumeroAdresse(commercant.getNumeroAdresse());
         commercantService.saveCommercant(commercant);
         return "redirect:/liste-commercants";
     }
