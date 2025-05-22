@@ -31,16 +31,37 @@
         <h2>Consulter un commerce</h2>
         <form th:action="@{'/modifier-commerce/' + ${commercant.id}}" th:object="${commercant}" method="post" autocomplete="off">
             <div class="mb-3">
-                <label class="form-label">Nom du commerce</label>
+                <label class="form-label">Nom du commerce <span style="color: red;">*</span></label>
                 <input type="text" class="form-control" th:field="*{nomCommerce}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Type d'activité</label>
+                <label class="form-label">Type d'activité <span style="color: red;">*</span></label>
                 <input type="text" class="form-control" th:field="*{typeActivite}">
             </div>
-            <div class="mb-3">
-                <label class="form-label">Adresse</label>
-                <input type="text" class="form-control" th:field="*{adresseCommerce}">
+            <div class="mb-3 position-relative">
+                <label class="form-label">Adresse du commerce <span style="color: red;">*</span></label>
+            
+                <div class="d-flex border rounded overflow-hidden">
+                    <!-- Champ numéro -->
+                    <input type="text"
+                           class="form-control border-0"
+                           style="max-width: 80px; background-color: #f8f9fa;"
+                           id="numeroAdresse"
+                           th:field="*{numeroAdresse}"
+                           name="numeroAdresse"
+                           placeholder="N°"
+                           autocomplete="off" />
+                    <!-- Champ adresse -->
+                    <input type="text"
+                           class="form-control border-0 flex-grow-1"
+                           id="adresseCommerce"
+                           th:field="*{adresseCommerce}"
+                           placeholder="Nom de la rue"
+                           autocomplete="off"
+                           required />
+                </div>
+                <!-- Suggestions AJAX ou dynamiques -->
+                <div id="adresseSuggestions" class="autocomplete-suggestions" style="display:none;"></div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Jours/Heures ouverture</label>
@@ -51,19 +72,23 @@
                 <input type="text" class="form-control" th:field="*{systemeProtection}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Nom propriétaire</label>
+                <label class="form-label">Nom Propriétaire / Gérant</label>
                 <input type="text" class="form-control" th:field="*{nomProprietaire}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Prénom propriétaire</label>
+                <label class="form-label">Prénom Propriétaire / Gérant</label>
                 <input type="text" class="form-control" th:field="*{prenomProprietaire}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Téléphone propriétaire</label>
+                <label class="form-label">Adresse du Propriétaire / Gérant</label>
+                <input type="text" class="form-control" th:field="*{adresseProprietaire}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Téléphone Propriétaire / Gérant</label>
                 <input type="text" class="form-control" th:field="*{telephoneProprietaire}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Mail propriétaire</label>
+                <label class="form-label">Mail Propriétaire / Gérant</label>
                 <input type="text" class="form-control" th:field="*{mailProprietaire}">
             </div>
             <div class="mb-3">
