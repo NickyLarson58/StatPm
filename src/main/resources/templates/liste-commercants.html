@@ -16,9 +16,9 @@
 </head>
 <body style="min-height: 100vh; background: linear-gradient(to bottom, #add8e6, #003366); color: #003366; font-family: 'Montserrat', sans-serif; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;">
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg" style="background-color: #297fcf; color: white;">
-        <div class="container-fluid">
-            <span class="navbar-brand" style="margin-left: 3%;"><i class="fas fa-store me-2"></i>La Ciotat Commerce</span>
+    <nav class="navbar navbar-expand-lg" style="background-color: #297fcf; color: white; width: 100%;">
+        <div class="container-fluid px-0">
+            <span class="navbar-brand" style="margin-left: 3%;color: rgb(247, 202, 79);"><i class="fas fa-store me-2"></i>La Ciotat Commerce</span>
             <div style="margin-right: 5%;">
                 <a href="/AccueilListeCommercant" class="btn btn-light">
                     <i class="fas fa-home me-2"></i>
@@ -44,7 +44,7 @@
                 <input type="text" class="form-control" name="type" th:value="${param.type}">
             </div>
             <div class="col-md-2">
-                <label class="form-label">Nom propriétaire / Gérant</label>
+                <label class="form-label">Nom Propriétaire / Gérant</label>
                 <input type="text" class="form-control" name="nomProprietaire" th:value="${param.nomProprietaire}">
             </div>
             
@@ -65,7 +65,7 @@
                     <th>Jours/Heures ouverture</th>
                     <th>Système protection</th>
                     <th>Propriétaire</th>
-                    <th>Téléphones</th>
+                    <th>Gestion</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,12 +81,7 @@
                         <span th:text="${commercant.mailProprietaire}"></span>
                     </td>
                     <td>
-                        <ul>
-                            <li th:each="tel : ${commercant.telephones}" th:utext="${tel.statut + ':<br/>'  + tel.nom + ' <br/> ' + tel.prenom + ' <br/> ' + tel.numero}"></li>
-                        </ul>
-                    </td>
-                    <td>
-                        <a th:href="@{'/consulter-commerce/' + ${commercant.id}}" class="btn btn-info btn-sm">Consulter</a>
+                        <a th:href="@{'/consulter-commerce/' + ${commercant.id}}" class="tool-button btn-sm"><button style="background-color: #00FF00;"><i class="fas fa-eye"></i> Consulter</button></a>
                     </td>
                 </tr>
             </tbody>
@@ -124,8 +119,8 @@
         });
     });
 </script>
-<footer  style="flex-shrink: 0; position: relative; bottom: 0; left: 10px; color: white; font-size: 0.8em; z-index: 100; width: 100%; text-align: left; background: transparent; ">
-    Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
-</footer>
+<footer style="flex-shrink: 0; position: fixed; bottom: 0; left: 0; right: 0; color: white; font-size: 0.8em; z-index: 100; width: 100%; text-align: left; padding: 5px 10px;">
+     Réalisation C/S BOUZEBOUDJA Mansour ® 2025™ 
+ </footer>
 </body>
 </html>
