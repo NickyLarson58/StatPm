@@ -72,7 +72,7 @@
                 <tr th:each="commercant : ${commercants}">
                     <td th:text="${commercant.nomCommerce}"></td>
                     <td th:text="${commercant.activite.nom}"></td>
-                    <td th:text="${commercant.adresseCommerce}"></td>
+                    <td th:text="${commercant.numeroAdresse + ' ' + commercant.adresseCommerce}"></td>
                     <td th:text="${commercant.joursHeuresOuverture}"></td>
                     <td th:text="${commercant.systemeProtection}"></td>
                     <td>
