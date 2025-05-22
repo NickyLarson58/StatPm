@@ -10,7 +10,9 @@ public class Commercant {
     private Long id;
 
     private String nomCommerce;
-    private String typeActivite;
+    @ManyToOne
+    @JoinColumn(name = "activite_id")
+    private Activite activite;
     private String adresseCommerce;
     private String joursHeuresOuverture;
     private String systemeProtection;
@@ -30,8 +32,8 @@ public class Commercant {
     public void setId(Long id) { this.id = id; }
     public String getNomCommerce() { return nomCommerce; }
     public void setNomCommerce(String nomCommerce) { this.nomCommerce = nomCommerce; }
-    public String getTypeActivite() { return typeActivite; }
-    public void setTypeActivite(String typeActivite) { this.typeActivite = typeActivite; }
+    public Activite getActivite() { return activite; }
+    public void setActivite(Activite activite) { this.activite = activite; }
     public String getAdresseCommerce() { return adresseCommerce; }
     public void setAdresseCommerce(String adresseCommerce) { this.adresseCommerce = adresseCommerce; }
     public String getJoursHeuresOuverture() { return joursHeuresOuverture; }

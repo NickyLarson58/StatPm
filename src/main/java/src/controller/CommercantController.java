@@ -9,12 +9,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import src.model.Commercant;
 import src.repository.CommercantRepository;
+import src.repository.ActiviteRepository;
 
 @Controller
 public class CommercantController {
 
     @Autowired
     private CommercantRepository commercantRepository;
+
+    @Autowired
+    private ActiviteRepository activiteRepository;
 
     @GetMapping("/AccueilListeCommercant")
     public String travaux() {
@@ -25,6 +29,7 @@ public class CommercantController {
     public String consulterCommerce(@PathVariable Long id, Model model) {
         Commercant commercant = commercantRepository.findById(id).orElse(null);
         model.addAttribute("commercant", commercant);
+        model.addAttribute("activites", activiteRepository.findAll());
         return "consulter-commerce";
     }
 

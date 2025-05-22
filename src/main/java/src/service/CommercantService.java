@@ -43,8 +43,8 @@ public class CommercantService {
         return commercantRepository.findByNomCommerceContainingIgnoreCase(nom);
     }
 
-    public List<Commercant> searchByTypeActivite(String type) {
-        return commercantRepository.findByTypeActiviteContainingIgnoreCase(type);
+    public List<Commercant> searchByActivite(String nomActivite) {
+        return commercantRepository.findByActivite_NomContainingIgnoreCase(nomActivite);
     }
 
     public List<Commercant> searchByAdresse(String adresse) {

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import src.model.Commercant;
 import src.model.Telephone;
 import src.repository.AdressesRepository;
+import src.repository.ActiviteRepository;
 import src.service.CommercantService;
 import src.service.TelephoneService;
 import java.util.List;
@@ -19,11 +20,13 @@ public class CommerceController {
     private TelephoneService telephoneService;
     @Autowired
     private AdressesRepository adressesRepository;
+    @Autowired
+    private ActiviteRepository activiteRepository;
 
     @GetMapping("/declarer-commerce")
-    public String showForm(Model model) {
+    public String afficherFormulaireCommerce(Model model) {
         model.addAttribute("commercant", new Commercant());
-        model.addAttribute("adresses", adressesRepository.findAll());
+        model.addAttribute("activites", activiteRepository.findAll());
         return "declarer-commerce";
     }
 
@@ -59,7 +62,7 @@ public class CommerceController {
         } else if (adresse != null && !adresse.isEmpty()) {
             commercants = commercantService.searchByAdresse(adresse);
         } else if (type != null && !type.isEmpty()) {
-            commercants = commercantService.searchByTypeActivite(type);
+            commercants = commercantService.searchByActivite(type);
         } else if (nomProprietaire != null && !nomProprietaire.isEmpty()) {
             commercants = commercantService.searchByNomProprietaire(nomProprietaire);
         } else {

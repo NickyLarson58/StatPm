@@ -36,7 +36,9 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Type d'activité <span style="color: red;">*</span></label>
-                <input type="text" class="form-control" th:field="*{typeActivite}">
+                <select class="form-control" th:field="*{activite}" required>
+                    <option th:each="activite : ${activites}" th:value="${activite.id}" th:text="${activite.nom}"></option>
+                </select>
             </div>
             <div class="mb-3 position-relative">
                 <label class="form-label">Adresse du commerce <span style="color: red;">*</span></label>
@@ -84,7 +86,7 @@
                 <input type="text" class="form-control" th:field="*{adresseProprietaire}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Téléphone Propriétaire / Gérant</label>
+                <label class="form-label" style="color: #00FF00;">Téléphone Propriétaire / Gérant</label>
                 <input type="text" class="form-control" th:field="*{telephoneProprietaire}">
             </div>
             <div class="mb-3">
