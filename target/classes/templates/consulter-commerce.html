@@ -18,7 +18,7 @@
 <div class="container mt-5">
     <div class="form-section">
         <h2>Consulter un commerce</h2>
-        <form th:object="${commercant}" autocomplete="off">
+        <form th:action="@{'/modifier-commerce/' + ${commercant.id}}" th:object="${commercant}" method="post" autocomplete="off">
             <div class="mb-3">
                 <label class="form-label">Nom du commerce</label>
                 <input type="text" class="form-control" th:field="*{nomCommerce}">
@@ -57,20 +57,59 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Téléphones associés</label>
-                <ul>
-                    <li th:each="tel : ${commercant.telephones}">
-                        <span th:text="${tel.statut}"></span> :
-                        <span th:text="${tel.nom}"></span> <span th:text="${tel.prenom}"></span> - <span th:text="${tel.numero}"></span>
-                    </li>
-                </ul>
+                <div id="telephones-list">
+                    <div th:each="tel,iterStat : *{telephones}" class="row mb-2">
+                        <div class="col">
+                            <input type="text" th:field="*{telephones[__${iterStat.index}__].nom}" class="form-control" placeholder="Nom">
+                        </div>
+                        <div class="col">
+                            <input type="text" th:field="*{telephones[__${iterStat.index}__].prenom}" class="form-control" placeholder="Prénom">
+                        </div>
+                        <div class="col">
+                            <input type="text" th:field="*{telephones[__${iterStat.index}__].numero}" class="form-control" placeholder="Numéro de téléphone">
+                        </div>
+                        <div class="col">
+                            <select th:field="*{telephones[__${iterStat.index}__].statut}" class="form-control" placeholder="Statut">
+                                <option value="Employé">Employé</option>
+                                <option value="Gérant">Gérant</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn remove-phone-btn" onclick="this.parentNode.parentNode.remove()"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn add-phone-btn" onclick="addPhoneField()"><i class="fas fa-plus"></i> Ajouter un téléphone</button>
             </div>
             <div class="mb-3 d-flex gap-2">
-                <a th:href="@{'/modifier-commerce/' + ${commercant.id}}" class="btn btn-warning">Modifier</a>
+                <button type="submit" class="btn btn-warning">Modifier</button>
                 <a th:href="@{'/supprimer-commerce/' + ${commercant.id}}" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce commerce ?');">Supprimer</a>
                 <a href="#" onclick="window.close(); return false;" class="btn btn-secondary">Fermer</a>
             </div>
         </form>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script>
+    function addPhoneField() {
+        const container = document.getElementById('telephones-list');
+        const idx = container.children.length;
+        const div = document.createElement('div');
+        div.className = 'row mb-2';
+        div.innerHTML =`<div class='col'><input type='text' name='telephones[${idx}].nom' class='form-control' placeholder='Nom'></div>
+                        <div class='col'><input type='text' name='telephones[${idx}].prenom' class='form-control' placeholder='Prénom'></div>
+                        <div class='col'><input type='text' name='telephones[${idx}].numero' class='form-control' placeholder='Numéro de téléphone'></div>
+                        <div class='col'><select name='telephones[${idx}].statut' class='form-control' placeholder='Statut'>
+                                <option value="Employé">Employé</option>
+                                <option value="Gérant">Gérant</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class='col-auto'><button type='button' class='btn remove-phone-btn' onclick='this.parentNode.parentNode.remove()'><i class='fas fa-trash'></i></button></div>`;
+        container.appendChild(div);
+    }
+</script>
 </body>
 </html>

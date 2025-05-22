@@ -38,6 +38,11 @@ public class CommercantController {
     @PostMapping("/modifier-commerce/{id}")
     public String modifierCommerce(@PathVariable Long id, Commercant commercant) {
         commercant.setId(id);
+        if (commercant.getTelephones() != null) {
+            for (var tel : commercant.getTelephones()) {
+                tel.setCommerce(commercant);
+            }
+        }
         commercantRepository.save(commercant);
         return "redirect:/liste-commercants";
     }
