@@ -446,7 +446,7 @@
             fetch('/api/user-info')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.pouvoir && data.pouvoir === 'admin') {
+                    if (data.pouvoir && data.pouvoir === 'admin' ||  data.pouvoir === 'userCb'  ) {
                         window.location.href = '/declarer-commerce';
                     } else {
                         Swal.fire({
