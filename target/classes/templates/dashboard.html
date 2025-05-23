@@ -398,7 +398,7 @@
                         <img src="redaction.png" alt="REDACTION" style="width: 60px; height: auto; margin-bottom: 10px;">RÉDACTION</a>
                     <a href="/travaux" class="gradient-btn">
                         <img src="procedure.png" alt="PROCEDURE" style="width: 50px; height: auto; margin-bottom: 10px;">PROCÉDURES</a>
-                    <a href="/cartographie" target="_blank" class="gradient-btn" onclick="return checkAccess(event)">
+                    <a href="/cartographie" target="_blank" class="gradient-btn" onclick="return checkStatAccess(event)">
                         <img src="carte.png" alt="PROCEDURE" style="width: 50px; height: auto; margin-bottom: 10px;">DÊPOTS / AFFICHAGES<br>SAUGAVES</a>
                     <a href="/AccueilListeCommercant" target="_blank" class="gradient-btn">
                         <img src="shop.png" alt="PROCEDURE" style="width: 50px; height: auto; margin-bottom: 10px;">LISTE DES COMMERÇANTS</a>
@@ -431,8 +431,7 @@
                         async function fetchFrance24News() {
                             try {
                                 const sensitiveKeywords = ['attaque', 'attaques', 'police', 'la ciotat', 'meurtre','terrorisme', 'terroriste','terrorismes', 'terroristes'];
-                                const newsContainer = document.getElementById('france24-news');
-                                
+                                const newsContainer = document.getElementById('france24-news');                              
                                 // Fetch both feeds with proper error handling
                                 const [france24Response, francetvResponse] = await Promise.all([
                                     fetch('https://api.rss2json.com/v1/api.json?rss_url=https://www.france24.com/fr/france/rss')
@@ -442,7 +441,6 @@
                                         .then(res => res.json())
                                         .catch(() => ({ items: [] }))
                                 ]);
-
                                 // Combine and sort news items
                                 const allNews = [...(france24Response.items || []), ...(francetvResponse.items || [])];
                                 allNews.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
@@ -474,8 +472,7 @@
 
                         // Update France24 news every 5 minutes
                         fetchFrance24News();
-                        setInterval(fetchFrance24News, 300000);
-                        
+                        setInterval(fetchFrance24News, 300000);                       
                         </script>
                     </div>
             </div>
