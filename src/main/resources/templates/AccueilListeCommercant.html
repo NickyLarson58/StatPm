@@ -405,8 +405,8 @@
             fetch('/api/user-info')
                 .then(response => response.json())
                 .then(data => {
-                    if (data.pouvoir && data.pouvoir === 'admin' || data.pouvoir === 'userCsu') {
-                        window.location.href = '/declarer-commerce';
+                    if (data.pouvoir && data.pouvoir === 'admin' || data.pouvoir === 'userCsu'  || data.pouvoir === 'userCb') {
+                        window.location.href = '/liste-commercants';
                     } else {
                         Swal.fire({
                             title: 'Accès refusé',
@@ -486,8 +486,6 @@
             // Set the background image from the provided image
             const cityImage = document.querySelector('.city-skyline');
             // We'll use the uploaded image url for this element
-
-
             // Animate counter numbers
             const counters = document.querySelectorAll('.counter');
             const speed = 200;

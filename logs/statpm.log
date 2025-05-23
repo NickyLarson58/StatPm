@@ -1923,3 +1923,8 @@ org.thymeleaf.exceptions.TemplateInputException: Error resolving template [consu
 2025-05-23 10:04:02 [http-nio-8082-exec-3] INFO  src.service.LoggingService - [2025-05-23 10:04:02] Type: AUTH, Matricule: 1428, Location: ./documents/destination - SQL results - nom: BOUZEBOUDJA, prenom: Hamid, brigade: CTV 2
 2025-05-23 10:04:02 [http-nio-8082-exec-3] INFO  src.service.LoggingService - [2025-05-23 10:04:02] Type: AUTH, Matricule: 1428, Location: ./documents/destination - Agent details retrieved successfully
 2025-05-23 10:04:02 [http-nio-8082-exec-3] DEBUG src.service.LoggingService - [2025-05-23 10:04:02] Type: AUTH, Matricule: 1428, Location: ./documents/destination - Récupération du pouvoir: userCsu
+2025-05-23 10:12:06 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-23 10:12:06] Type: AUTH, Matricule: 56979, Location: ./documents/destination - Connexion réussie
+2025-05-23 10:12:06 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-23 10:12:06] Type: AUTH, Matricule: 56979, Location: ./documents/destination - Executing SQL query for agent details
+2025-05-23 10:12:06 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-23 10:12:06] Type: AUTH, Matricule: 56979, Location: ./documents/destination - SQL results - nom: YACOUB, prenom: Samir, brigade: ENCADREMENT
+2025-05-23 10:12:06 [http-nio-8082-exec-2] INFO  src.service.LoggingService - [2025-05-23 10:12:06] Type: AUTH, Matricule: 56979, Location: ./documents/destination - Agent details retrieved successfully
+2025-05-23 10:12:06 [http-nio-8082-exec-2] DEBUG src.service.LoggingService - [2025-05-23 10:12:06] Type: AUTH, Matricule: 56979, Location: ./documents/destination - Récupération du pouvoir: userCb
