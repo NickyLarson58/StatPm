@@ -24,7 +24,7 @@ public class DatabaseBackupController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Créer le répertoire de sauvegarde s'il n'existe pas
+            // CrÃ©er le rÃ©pertoire de sauvegarde s'il n'existe pas
             File backupDir = new File(BACKUP_DIRECTORY);
             if (!backupDir.exists()) {
                 backupDir.mkdirs();
@@ -47,27 +47,27 @@ public class DatabaseBackupController {
             Map<String, String> env = processBuilder.environment();
             env.put("MYSQL_PWD", DB_PASSWORD);
             
-            // Afficher la commande pour le débogage (sans le mot de passe)
-            System.out.println("Commande exécutée : " + MYSQL_DUMP_PATH + " -h " + DB_HOST + " -u " + DB_USER + " -proot --databases " + DB_NAME);
+            // Afficher la commande pour le dÃ©bogage (sans le mot de passe)
+            System.out.println("Commande exÃ©cutÃ©e : " + MYSQL_DUMP_PATH + " -h " + DB_HOST + " -u " + DB_USER + " -proot --databases " + DB_NAME);
 
-            // Rediriger l'erreur vers la console pour le débogage
+            // Rediriger l'erreur vers la console pour le dÃ©bogage
             processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT);
             processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
-            // Exécuter la commande
+            // ExÃ©cuter la commande
             Process process = processBuilder.start();
             int exitCode = process.waitFor();
 
-            // Vérifier si le fichier a été créé et n'est pas vide
+            // VÃ©rifier si le fichier a Ã©tÃ© crÃ©Ã© et n'est pas vide
             File outputFile = new File(backupFile);
             if (exitCode == 0 && outputFile.exists() && outputFile.length() > 0) {
                 response.put("success", true);
-                response.put("message", "Sauvegarde de la base de données effectuée avec succès");
+                response.put("message", "Sauvegarde de la base de donnÃ©es effectuÃ©e avec succÃ¨s");
                 response.put("backupFile", backupFile);
                 response.put("fileSize", outputFile.length());
             } else {
                 response.put("success", false);
-                response.put("message", "Erreur lors de la sauvegarde de la base de données: fichier vide ou non créé");
+                response.put("message", "Erreur lors de la sauvegarde de la base de donnÃ©es: fichier vide ou non crÃ©Ã©");
             }
 
         } catch (Exception e) {
