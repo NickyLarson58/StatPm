@@ -307,8 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 addresses = data;
                 addressesLoaded = true;
-                console.log('Liste complète des adresses chargées:', addresses); // Ajout de ce log
-                console.log('Nombre total d\'adresses:', addresses.length);
                 filterAddresses(addressInput.value.toLowerCase());
             })
             .catch(error => {
@@ -511,7 +509,8 @@ function validerToutesInterventions() {
             lieu: cells[3].textContent,
             idAdresse: cells[5].textContent,
             idInfractionOrMad: cells[6].textContent,
-            typeStatistique: cells[7].textContent
+            typeStatistique: cells[7].textContent,
+            labeltypeIntervention: cells[8].textContent
         };
     });
     let allAgents = [];
@@ -551,9 +550,12 @@ function validerToutesInterventions() {
                 agents: allAgents,
                 brigade: document.getElementById('brigade').value
             };
-            if (intervention.typeIntervention === 'MAD' && intervention.idInfractionOrMad) {
+            console.log('intervention.typeIntervention  :::::::::', intervention.typeIntervention);
+            console.log('intervention.idInfractionOrMad :::::::::', intervention.idInfractionOrMad);
+            console.log('intervention.labeltypeIntervention ::::::::::', intervention.labeltypeIntervention);
+            if (intervention.labeltypeIntervention === 'MAD' && intervention.idInfractionOrMad) {
                 interventionDTO.idMad = intervention.idInfractionOrMad;
-            } else if (intervention.typeIntervention === 'CODE DE LA ROUTE' && intervention.idInfractionOrMad) {
+            } else if (intervention.labeltypeIntervention === 'CODE DE LA ROUTE' && intervention.idInfractionOrMad) {
                 interventionDTO.idInfraction = intervention.idInfractionOrMad;
             }
             return interventionDTO;
@@ -858,8 +860,6 @@ function initDynamicTitle() {
             .then(response => response.json())
             .then(userInfo => {
                 const connectedAgentId = userInfo.matricule;
-                console.log('🔍 Informations de l\'agent connecté:', userInfo);
-                console.log('👤 Matricule de l\'agent connecté:', connectedAgentId);
             })
             .catch(error => console.error('Erreur chargement agents:', error));
 
@@ -868,7 +868,6 @@ function initDynamicTitle() {
             fetch('/api/agent-brigade')
                 .then(response => response.json())
                 .then(agentBrigade => {
-                    console.log('Brigade de l\'utilisateur:', agentBrigade);
                     // Charger toutes les brigades
                     return fetch('/api/brigades').then(response => response.json()).then(brigades => {
                         const select = document.getElementById('brigade');
@@ -971,8 +970,6 @@ function initDynamicTitle() {
             const agents = Array.from(form.querySelectorAll('.agent-select'))
                 .map(select => select.value)
                 .filter(value => value); // Filtrer les valeurs vides
-
-            console.log("Agents sélectionnés :", agents);
 
             if (agents.length === 0) {
                 alert('Veuillez sélectionner au moins un agent');
@@ -1389,6 +1386,8 @@ function filterInfractions(searchText) {
             const infractionId = document.getElementById('infractionId').value;
             const typeStat = document.querySelector('input[name="typeStat"]:checked');
 
+
+
             // Vérification de l'adresse
             if (!addresses.some(addr => addr.nomadresse.toLowerCase() === adresse.toLowerCase())) {
                 alert("L'adresse saisie n'est pas valide. Veuillez sélectionner une adresse dans la liste proposée.");
@@ -1452,6 +1451,7 @@ function filterInfractions(searchText) {
                 <td>${lieuIdInput}</td>
                 <td>${infractionId}</td>
                 <td>${typeStat.value}</td>
+                <td style="display: none;">${typeIntervention}</td>
                 <td>
                     <button class="btn btn-danger btn-sm" onclick="supprimerIntervention(this.closest('tr'))">
                         <i class="fas fa-trash-alt"></i>
