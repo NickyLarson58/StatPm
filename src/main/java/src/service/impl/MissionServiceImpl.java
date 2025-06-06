@@ -30,6 +30,7 @@ public class MissionServiceImpl implements MissionService {
         }
         statMission.setDateMission(missionDTO.getDateMission());
         statMission.setDureeMission(missionDTO.getDuree());
+        statMission.setBrigade(missionDTO.getBrigade());
         Adresses adresse = adressesRepository.findById(missionDTO.getIdAdresse()).orElse(null);
         if (adresse != null) {
             statMission.setLieuMission(adresse);

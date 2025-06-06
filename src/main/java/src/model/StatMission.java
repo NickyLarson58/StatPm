@@ -8,9 +8,9 @@ import java.util.List;
 @Table(name = "stat_mission")
 public class StatMission {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_stat_mission")
-    private int idStatMission;
+    private Long idStatMission;
 
     @Column(name = "date_mission")
     private LocalDate dateMission;
@@ -40,11 +40,11 @@ public class StatMission {
     private List<Agents> agents;
     
 
-    public int getIdStatMission() {
+    public Long getIdStatMission() {
         return idStatMission;
     }
 
-    public void setIdStatMission(int idStatMission) {
+    public void setIdStatMission(Long idStatMission) {
         this.idStatMission = idStatMission;
     }
 
@@ -80,9 +80,17 @@ public class StatMission {
         this.commerce = commerce;
     }
 
+    public String getBrigade() {
+        return brigade;
+    }
+
+    public void setBrigade(String brigade) {
+        this.brigade = brigade;
+    }
     public Integer getDureeMission() {
         return dureeMission;
     }
+    
 
     public void setDureeMission(Integer dureeMission) {
         this.dureeMission = dureeMission;

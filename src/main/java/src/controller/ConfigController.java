@@ -18,9 +18,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import src.model.Infraction;
 import src.model.Interventions;
 import src.model.Mad;
+import src.model.Missions;
 import src.repository.InterventionsRepository;
 import src.service.StatService;
 import src.repository.MadRepository;
+import src.repository.MissionsRepository;
 import src.repository.InfractionRepository;
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -59,6 +61,9 @@ public class ConfigController {
 
     @Autowired
     private InterventionsRepository interventionsRepository;
+
+    @Autowired
+    private MissionsRepository missionsRepository;
 
     @GetMapping("/accueilStat")
     public String accueilStat() {
@@ -269,6 +274,17 @@ public class ConfigController {
     public List<Interventions> getTypesInterventions() {
         try {
             return interventionsRepository.findAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    @GetMapping("/api/types-missions")
+    @ResponseBody
+    public List<Missions> getTypesMissions() {
+        try {
+            return missionsRepository.findAll();
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();

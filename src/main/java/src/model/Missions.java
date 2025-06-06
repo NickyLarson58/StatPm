@@ -9,16 +9,16 @@ public class Missions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_mission")
-    private int idMission;
+    private Long idMission;
 
     @Column(name = "nom_mission")
     private String nomMission;
 
-    public int getIdMission() {
+    public Long getIdMission() {
         return idMission;
     }
 
-    public void setIdMission(int idMission) {
+    public void setIdMission(Long idMission) {
         this.idMission = idMission;
     }
 

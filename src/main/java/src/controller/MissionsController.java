@@ -108,6 +108,8 @@ public class MissionsController {
             _mission.setMissions(mission.getMissions());
             _mission.setCommerce(mission.getCommerce());
             _mission.setDureeMission(mission.getDureeMission());
+            _mission.setCommerce(mission.getCommerce());
+            _mission.setBrigade(mission.getBrigade());
             return new ResponseEntity<>(statMissionRepository.save(_mission), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

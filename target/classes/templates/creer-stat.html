@@ -4,6 +4,12 @@
     <title>Création de Statistiques</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/base/jquery-ui.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
 
 .info-section {
@@ -13,6 +19,12 @@
             border-radius: 5px;
         }
 .equipage-section {
+            background-color: #003366; /* bleu police */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+.typeStat-section {
             background-color: #f0f8ff;
             padding: 20px;
             margin-bottom: 20px;
@@ -210,10 +222,19 @@
 
 
 
+
 <!-- 3. Ajouter dans la section <script> existante, juste après document.addEventListener('DOMContentLoaded', function() { -->
 <script>
 let addresses = []; // Déclarer au niveau global
 let addressesLoaded = false;
+const header = "";
+
+
+// Fonction pour mettre à jour l'en-tête du tableau
+function updateTableHeader() {
+            const typeStat = document.querySelector('input[name="typeStat"]:checked').value;
+            header = typeStat === 'missions' ? 'Nom Mission' : 'Nom Intervention';
+        }
 
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration de l'autocomplétion d'adresse
@@ -409,7 +430,31 @@ function getAgentsFromEquipage(equipageName) {
 
 // Fonction pour charger les types d'interventions
 function loadTypeInterventions() {
-    fetch('/api/types-interventions')
+    const selected = document.querySelector('input[name="typeStat"]:checked');
+    if (selected.value === 'missions') {
+    fetch('/api/types-missions')
+        .then(response => response.json())
+        .then(missions => {
+            const select = document.getElementById('typeIntervention');
+            select.innerHTML = '<option value="">Sélectionnez une mission</option>';
+
+            // Tri sécurisé
+            missions.sort((a, b) => {
+                const nomA = a.nomMission || "";
+                const nomB = b.nomMission || "";
+                return nomA.localeCompare(nomB);
+            });
+
+            missions.forEach(mission => {
+                const option = document.createElement('option');
+                option.value = [mission.idMission, mission.nomMission];
+                option.textContent =  mission.nomMission;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Erreur lors du chargement des missions:", error));
+    }else if (selected.value === 'interventions') {
+        fetch('/api/types-interventions')
         .then(response => response.json())
         .then(interventions => {
             const select = document.getElementById('typeIntervention');
@@ -434,46 +479,41 @@ option.textContent = intervention.nomInterventions;
             });
         })
         .catch(error => console.error('Erreur:', error));
+    }
 }
 
 function validerToutesInterventions() {
     const tbody = document.getElementById('recapInterventions');
     const interventions = tbody.getElementsByTagName('tr');
-    
     if (interventions.length === 0) {
         alert("Aucune intervention à valider.");
         return;
     }
-
     const dateCreation = document.getElementById('dateCreation').value;
     if (!dateCreation) {
         alert("Veuillez sélectionner une date.");
         return;
     }
-
-    // Fonction pour formater la date au format JJ.MM.AAAA
     function formatDate(date) {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}.${month}.${year}`;
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
-
     // Récupérer toutes les données des interventions
     const interventionsData = Array.from(interventions).map(row => {
         const cells = row.getElementsByTagName('td');
-        const lieu = cells[3].textContent;
         return {
             equipage: cells[0].textContent,
             idInterventions: cells[4].textContent,
             typeIntervention: cells[7].textContent,
             nombre: parseInt(cells[2].textContent),
-            lieu: lieu,
+            lieu: cells[3].textContent,
             idAdresse: cells[5].textContent,
-            idInfractionOrMad: cells[6].textContent
+            idInfractionOrMad: cells[6].textContent,
+            typeStatistique: cells[7].textContent
         };
     });
-
     let allAgents = [];
     interventionsData.forEach(intervention => {
         const equipageAgents = getAgentsFromEquipage(intervention.equipage);
@@ -483,106 +523,104 @@ function validerToutesInterventions() {
             }
         });
     });
-    
-    // Créer un tableau d'interventions DTO
-    const interventionsDTO = interventionsData.map(intervention => {
-        const interventionDTO = {
-            dateIntervention: dateCreation,
-            idIntervention: intervention.idInterventions,
-            nomInterventions: intervention.typeIntervention,
-            nombreIntervention: intervention.nombre,
-            idAdresse: intervention.idAdresse,
-            idInfraction: null,
-            idMad: null,
-            lieu: intervention.lieu,
-            agents: allAgents,
-            brigade: document.getElementById('brigade').value
-        };
-
-        // Définir idMad ou idInfraction en fonction du type d'intervention
-        if (intervention.typeIntervention === 'MAD' && intervention.idInfractionOrMad) {
-            interventionDTO.idMad = intervention.idInfractionOrMad;
-        } else if (intervention.typeIntervention === 'CODE DE LA ROUTE' && intervention.idInfractionOrMad) {
-            interventionDTO.idInfraction = intervention.idInfractionOrMad;
+    // Créer un tableau d'objets à envoyer, chaque objet selon son typeStatistique
+    const payload = interventionsData.map(intervention => {
+        if (intervention.typeStatistique === "missions") {
+            return {
+                type: "missions",
+                dateMission: formatDate(new Date(dateCreation)),
+                duree: parseInt(intervention.nombre),
+                idMission: parseInt(intervention.idInterventions),
+                idAdresse: intervention.idAdresse,
+                commerce: null,
+                agents: allAgents,
+                brigade: document.getElementById('brigade').value
+            };
+        } else {
+            // interventions
+            const interventionDTO = {
+                type: "interventions",
+                dateIntervention: dateCreation,
+                idIntervention: intervention.idInterventions,
+                nomInterventions: intervention.typeIntervention,
+                nombreIntervention: intervention.nombre,
+                idAdresse: intervention.idAdresse,
+                idInfraction: null,
+                idMad: null,
+                lieu: intervention.lieu,
+                agents: allAgents,
+                brigade: document.getElementById('brigade').value
+            };
+            if (intervention.typeIntervention === 'MAD' && intervention.idInfractionOrMad) {
+                interventionDTO.idMad = intervention.idInfractionOrMad;
+            } else if (intervention.typeIntervention === 'CODE DE LA ROUTE' && intervention.idInfractionOrMad) {
+                interventionDTO.idInfraction = intervention.idInfractionOrMad;
+            }
+            return interventionDTO;
         }
-
-        return interventionDTO;
     });
-    
     // Afficher un message de chargement
     const loadingMessage = document.createElement('div');
     loadingMessage.className = 'alert alert-info';
     loadingMessage.textContent = 'Validation des interventions en cours...';
     document.querySelector('.recap-section').prepend(loadingMessage);
-
-    // Envoyer toutes les interventions au serveur
-    fetch(`/api/valider-interventions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(interventionsDTO)
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Supprimer le message de chargement
-        loadingMessage.remove();
-        
-        if (data.success) {
-            // Créer la sauvegarde de la base de données
-            const currentDate = new Date();
-            const formattedDate = formatDate(currentDate);
-            const backupFileName = `SauvegardeBddStatWeb-${formattedDate}`;
-
-            fetch(`/api/backup-database?fileName=${backupFileName}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(backupData => {
-                console.log('Sauvegarde de la base de données effectuée:', backupData);
-            })
-            .catch(error => {
-                console.error('Erreur lors de la sauvegarde de la base de données:', error);
-            });
-
-            // Afficher un message de succès
-            const successMessage = document.createElement('div');
-            successMessage.className = 'alert alert-success';
-            successMessage.textContent = data.message + ' - Sauvegarde de la base de données effectuée.';
-            document.querySelector('.recap-section').prepend(successMessage);
-            
-            // Vider le tableau après validation
-            tbody.innerHTML = '';
-            
-            // Supprimer le message après 3 secondes
-            setTimeout(() => successMessage.remove(), 3000);
-        } else {
-            // Afficher un message d'erreur
-            const errorMessage = document.createElement('div');
-            errorMessage.className = 'alert alert-danger';
-            errorMessage.textContent = data.message || 'Erreur lors de la validation des interventions';
-            document.querySelector('.recap-section').prepend(errorMessage);
-            
-            // Supprimer le message après 5 secondes
-            setTimeout(() => errorMessage.remove(), 5000);
-        }
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        
-        // Supprimer le message de chargement s'il existe encore
-        if (loadingMessage) loadingMessage.remove();
-        
-        // Afficher un message d'erreur
-        const errorMessage = document.createElement('div');
-        errorMessage.className = 'alert alert-danger';
-        errorMessage.textContent = 'Erreur lors de la validation des interventions: ' + error.message;
-        document.querySelector('.recap-section').prepend(errorMessage);
-        
-        // Supprimer le message après 5 secondes
-        setTimeout(() => errorMessage.remove(), 5000);
-    });
+    // Séparer les missions et interventions pour les envoyer aux bons endpoints
+    const missionsPayload = payload.filter(p => p.type === "missions").map(({type, ...rest}) => rest);
+    const interventionsPayload = payload.filter(p => p.type === "interventions").map(({type, ...rest}) => rest);
+    const promises = [];
+    if (missionsPayload.length > 0) {
+        promises.push(
+            fetch("/api/valider-missions", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(missionsPayload)
+            }).then(response => response.json())
+        );
+    }
+    if (interventionsPayload.length > 0) {
+        promises.push(
+            fetch("/api/valider-interventions", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(interventionsPayload)
+            }).then(response => response.json())
+        );
+    }
+    Promise.all(promises)
+        .then(results => {
+            loadingMessage.remove();
+            let allSuccess = results.every(data => data.success);
+            if (allSuccess) {
+                // Créer la sauvegarde de la base de données
+                const currentDate = new Date();
+                const formattedDate = formatDate(currentDate);
+                const backupFileName = `SauvegardeBddStatWeb-${formattedDate}`;
+                fetch(`/api/backup-database?fileName=${backupFileName}`, {
+                    method: 'POST'
+                });
+            }
+            // Afficher le résultat ou gérer les erreurs ici
+            if (allSuccess) {
+                const successMessage = document.createElement('div');
+                successMessage.className = 'alert alert-success';
+                successMessage.textContent = 'Toutes les statistiques ont été validées et sauvegardées.';
+                document.querySelector('.recap-section').prepend(successMessage);
+                tbody.innerHTML = '';
+                setTimeout(() => successMessage.remove(), 3000);
+            } else {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'alert alert-danger';
+                errorMessage.textContent = 'Erreur lors de la validation de certaines statistiques.';
+                document.querySelector('.recap-section').prepend(errorMessage);
+                setTimeout(() => errorMessage.remove(), 5000);
+            }
+        })
+        .catch(error => {
+            loadingMessage.remove();
+            alert("Erreur lors de la validation des statistiques : " + error);
+        });
 }
+
 
 // Fonction pour extraire les informations des agents à partir du nom de l'équipage
 function getAgentsFromEquipage(equipageName) {
@@ -653,7 +691,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         <!-- Section Équipages -->
         <div class="equipage-section">
-            <h3><button style="background-color:  #003366;" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#creerEquipageModal">
+            <h3><button style="background-color:  #0d7ceb;" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#creerEquipageModal">
                 Créer un équipage
             </button></h3>
             
@@ -662,13 +700,25 @@ document.addEventListener('DOMContentLoaded', function() {
             <div id="listeEquipages" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: left;"></div>
         </div>
 
+        <div id="avertissementEquipage" class="alert alert-warning mt-2" style="display: none;font-weight: bold;">
+            ⚠️ Veuillez créer un équipage avant de sélectionner le type Statistique ⚠️ 
+        </div>
+
+         <!-- TYPE DE STATISTIQUE -->
+         <div class="typeStat-section">
+            <h2 class="text-xl font-bold"> VEUILLEZ SÉLÉCTIONNER LE TYPE DE STATISTIQUE</h2>
+           <div class="mt-4">
+               <div class="mt-2">
+                   <label class="ml-4"><input type="radio" name="typeStat" value="interventions" checked> 🚔 Interventions</label>
+                   <label><input type="radio" name="typeStat" value="missions" > 📋 Missions</label>
+               </div>
+           </div>
+         </div>
+
         <!-- Section Interventions -->
         <div class="intervention-section">
-            <h3 style="margin-block-end: 20px;color: white;">SAISIE DES INTERVENTIONS ET DES INFRACTIONS</h3>
-            <div class="mb-3">
-                <div id="avertissementEquipage" class="alert alert-warning mt-2" style="display: none;font-weight: bold;">
-    ⚠️ Veuillez créer un équipage avant de sélectionner le type d'intervention ⚠️ 
-</div>
+            <h3 style="margin-block-end: 20px;color: white;">SAISIE DES INFORMATIONS</h3>
+            <div class="mb-3">                
 <select class="form-select" id="typeIntervention" required style="background-color: rgb(93, 187, 187); font-weight: bold;">
                     <option value="">Sélectionnez un type d'intervention</option>
                 </select>
@@ -689,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="lieuIntervention" class="form-label" style="color: white;">Adresse de l'intervention</label>
+                    <label id="dynamic-type-adresse" for="lieuIntervention" class="form-label" style="color: white;">Adresse de l'intervention</label>
                     <input type="text" class="form-control" id="lieuIntervention" placeholder="Entrez l'adresse" autocomplete="off" required>
                     <input type="hidden" id="lieuIdIntervention" name="lieuIdIntervention">
                 </div>
@@ -704,19 +754,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
         <!-- Section Récapitulatif -->
         <div class="recap-section">
-            <h3 style="margin-block-end: 20px;background-color: #003366; color: white;">RECAPITULATIF DES INTERVENTIONS</h3>
+            <h3 style="margin-block-end: 20px;background-color: #003366; color: white;">RECAPITULATIF DES STATISTIQUES</h3>
             <div class="table-wrapper">
                 <div class="table-container">
                     <table class="table">
                         <thead>
                             <tr style="color: white;">
                                 <th>Equipage</th>
-                                <th>Type d'intervention</th>
+                                <th>Libellé</th>
                                 <th>Nombre</th>
                                 <th>Lieu</th>
                                 <th>TypeId</th>
                                 <th>LieuId</th>
                                 <th>InfractionId/MadId</th>
+                                <th>Type Statistique</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -727,7 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="button-container">
                     <button type="button" class="btn btn-success btn-lg" onclick="validerToutesInterventions()">
-                        Valider toutes les interventions
+                        Valider toutes les Statistiques
                     </button>
                 </div>
             </div>
@@ -768,6 +819,36 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Ajouter la référence au fichier JS externe -->
     <script src="/js/equipage.js"></script>
     <script>
+
+function initDynamicTitle() {
+        const radios = document.querySelectorAll('input[name="typeStat"]');
+        const adresseDynamicTitle = document.getElementById('dynamic-type-adresse');
+
+        function updateTitle(value) {
+            if (value === 'interventions') {
+                adresseDynamicTitle.textContent = "Adresse de l\'intervention";
+            } else if (value === 'missions') {
+                adresseDynamicTitle.textContent = "Adresse de la mission";
+            }
+        }
+
+        radios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                updateTitle(e.target.value);
+                loadTypeInterventions();
+            });
+        });
+
+        // Initialisation au chargement
+        const selected = document.querySelector('input[name="typeStat"]:checked');
+        if (selected) {
+            updateTitle(selected.value);
+        }
+    }
+
+    // Appelle la fonction une fois le DOM chargé
+    document.addEventListener('DOMContentLoaded', initDynamicTitle);
+        
         // Garder uniquement le code spécifique à la page qui n'est pas dans equipage.js
         window.equipages = [];
         
@@ -1306,6 +1387,7 @@ function filterInfractions(searchText) {
             const typeIdSelect = document.getElementById('typeIntervention').value[0];
             const lieuIdInput = document.getElementById('lieuIdIntervention').value;
             const infractionId = document.getElementById('infractionId').value;
+            const typeStat = document.querySelector('input[name="typeStat"]:checked');
 
             // Vérification de l'adresse
             if (!addresses.some(addr => addr.nomadresse.toLowerCase() === adresse.toLowerCase())) {
@@ -1369,7 +1451,7 @@ function filterInfractions(searchText) {
                 <td>${typeId}</td>
                 <td>${lieuIdInput}</td>
                 <td>${infractionId}</td>
-                <td style="display: none">${typeIntervention}</td>
+                <td>${typeStat.value}</td>
                 <td>
                     <button class="btn btn-danger btn-sm" onclick="supprimerIntervention(this.closest('tr'))">
                         <i class="fas fa-trash-alt"></i>

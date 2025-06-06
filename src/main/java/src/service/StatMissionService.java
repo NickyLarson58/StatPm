@@ -46,13 +46,22 @@ public class StatMissionService {
         // Définir la date et la durée de la mission
         statMission.setDateMission(dto.getDateMission());
         statMission.setDureeMission(dto.getDuree());
+        statMission.setBrigade(dto.getBrigade());
         
         // Définir le commerce si présent
         statMission.setCommerce(dto.getCommerce());
 
         // Récupérer et associer la mission
-        Missions mission = missionsRepository.findById(dto.getIdMission())
-                .orElseThrow(() -> new RuntimeException("Mission non trouvée"));
+        Missions mission;
+        if (dto.getIdMission() == null || dto.getIdMission() == 0) {
+            mission = new Missions();
+            mission.setNomMission(dto.getNomMission());
+            // idMission is left null so it will be auto-generated
+            mission = missionsRepository.save(mission);
+        } else {
+            mission = missionsRepository.findById(dto.getIdMission())
+                    .orElseThrow(() -> new RuntimeException("Mission non trouvée"));
+        }
         statMission.setMissions(mission);
 
         // Récupérer et associer l'adresse

@@ -12,8 +12,11 @@ import src.model.dto.CreatedStatMissionDTO;
 import src.service.StatMissionService;
 
 import javax.servlet.http.HttpSession;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 @Controller
 public class StatMissionController {
@@ -58,6 +61,42 @@ public class StatMissionController {
             response.put("success", false);
             response.put("message", "Erreur lors de l'enregistrement de la mission: " + e.getMessage());
             
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/api/valider-missions")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> validerMissions(
+            @RequestBody List<CreatedStatMissionDTO> missionsDTO,
+            HttpSession session) {
+        // Vérifier que l'utilisateur est connecté
+        String matricule = (String) session.getAttribute("matricule");
+        if (matricule == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Utilisateur non authentifié");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            List<Long> savedMissionIds = new ArrayList<>();
+            for (CreatedStatMissionDTO missionDTO : missionsDTO) {
+                StatMission savedMission = statMissionService.createStatMission(missionDTO);
+                savedMissionIds.add(savedMission.getIdStatMission());
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Toutes les missions ont été enregistrées avec succès");
+            response.put("missionIds", savedMissionIds);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Erreur lors de l'enregistrement des missions: " + e.getMessage());
+
             return ResponseEntity.badRequest().body(response);
         }
     }
