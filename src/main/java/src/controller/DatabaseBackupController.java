@@ -13,9 +13,9 @@ import java.util.Map;
 public class DatabaseBackupController {
 
     private static final String BACKUP_DIRECTORY = "sauvegardeBdd";
-    private static final String DB_HOST = "localhost";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
+    private static final String DB_HOST = "10.13.9.68";
+    private static final String DB_USER = "pom48";
+    private static final String DB_PASSWORD = "root";
     private static final String DB_NAME = "statweb";
     private static final String MYSQL_DUMP_PATH = "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe";
 
