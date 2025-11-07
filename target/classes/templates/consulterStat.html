@@ -1113,14 +1113,15 @@
             }
             
             data.forEach(item => {
-                // Adapter en fonction de la structure de données retournée par l'API
-                const entityName = typeRecherche === 'brigade' ? item.brigade : typeRecherche === 'agent'? item.agents[0].nomAgent + " " + item.agents[0].prenomAgent : "Police Municipale";
+                const brigadeName = item.brigadeNom || item.brigade || ((item.agents && item.agents[0] && item.agents[0].brigade) ? item.agents[0].brigade : null) || 'N/A';
+                const agentName = (item.agents && item.agents[0]) ? (item.agents[0].nomAgent + " " + item.agents[0].prenomAgent) : 'N/A';
+                const entityName = typeRecherche === 'agent' ? agentName : brigadeName;
                 const interventionName = item.nomIntervention;
                 const row = `<tr class="text-center">
                     <td class="p-2">${entityName || 'N/A'}</td>
                     <td class="p-2">${interventionName || 'N/A'}</td>
                     <td class="p-2">${item.nombre || 0}</td>
-                    <td class="p-2">${item.adresse.nomadresse || 'N/A'}</td>
+                    <td class="p-2">${(item.adresse && item.adresse.nomadresse) ? item.adresse.nomadresse : 'N/A'}</td>
                 </tr>`;
                 tableBody.innerHTML += row;
             });

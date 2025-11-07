@@ -119,6 +119,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                         dto.setAdresse(adresse);
                         dto.setNomIntervention(nomMission);
                         dto.setNombre(missionsForName.size());  // Nombre de missions pour cette adresse et ce nom
+                        dto.setBrigadeNom(!missionsForName.isEmpty() ? missionsForName.get(0).getBrigade() : null);
 
                         
                         if (agentId == null) {
@@ -158,6 +159,9 @@ public class StatisticsServiceImpl implements StatisticsService {
                         dto.setAdresse(adresse);
                         dto.setNomIntervention(nomIntervention);
                         dto.setNombre(interventionsForName.size());  // Nombre d'interventions pour cette adresse et ce nom
+                        dto.setBrigadeNom(!interventionsForName.isEmpty() ? interventionsForName.get(0).getBrigade() : null);
+
+                        
                         if (agentId == null) {
                             dto.setBrigade(brigade);  // Si agentId est null, on met seulement la brigade
                         } else {

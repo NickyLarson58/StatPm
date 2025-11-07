@@ -12,6 +12,7 @@ public class StatistiqueDTO {
     private Integer nombre;
     private Adresses adresse;
     private LocalDate date;
+    private String brigadeNom;
 
     // Getters et setters
     public List<Agents> getAgents() {
@@ -61,4 +62,7 @@ public class StatistiqueDTO {
     public void setDate(LocalDate date) {
         this.date = date;
     }
+
+    public String getBrigadeNom() { return brigadeNom; }
+    public void setBrigadeNom(String brigadeNom) { this.brigadeNom = brigadeNom; }
 }
