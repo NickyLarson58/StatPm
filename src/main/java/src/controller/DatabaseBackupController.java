@@ -13,7 +13,7 @@ import java.util.Map;
 public class DatabaseBackupController {
 
     private static final String BACKUP_DIRECTORY = "sauvegardeBdd";
-    private static final String DB_HOST = "10.13.9.68";
+    private static final String DB_HOST = "10.10.6.124";
     private static final String DB_USER = "pom48";
     private static final String DB_PASSWORD = "root";
     private static final String DB_NAME = "statweb";
