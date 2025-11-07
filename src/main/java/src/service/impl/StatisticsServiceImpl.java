@@ -118,12 +118,24 @@ public class StatisticsServiceImpl implements StatisticsService {
                         StatistiqueDTO dto = new StatistiqueDTO();
                         dto.setAdresse(adresse);
                         dto.setNomIntervention(nomMission);
-                        dto.setNombre(missionsForName.size());  // Nombre de missions pour cette adresse et ce nom
+                        dto.setNombre(missionsForName.size());
                         dto.setBrigadeNom(!missionsForName.isEmpty() ? missionsForName.get(0).getBrigade() : null);
-
                         
                         if (agentId == null) {
-                            dto.setBrigade(brigade);  // Si agentId est null, on met seulement la brigade
+                            dto.setBrigade(brigade);
+                            // Agréger les agents uniques pour cette ligne (recherche par brigade)
+                            List<Agents> agentsGroup = missionsForName.stream()
+                                .flatMap(mission -> mission.getAgents().stream())
+                                .collect(Collectors.toList());
+                            Map<Integer, Agents> uniqueAgentsMap = agentsGroup.stream()
+                                .collect(Collectors.toMap(Agents::getMatricule, a -> a, (a, b) -> a));
+                            List<Agents> uniqueAgents = new ArrayList<>(uniqueAgentsMap.values());
+                            dto.setAgents(uniqueAgents);
+                            String agentNomStr = uniqueAgents.stream()
+                                .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                                .distinct()
+                                .collect(Collectors.joining(", "));
+                            dto.setAgentNom(agentNomStr);
                         } else {
                             // Filtrer les agents par agentId
                             List<Agents> listWithCurrentAgent = missionsForName.stream()
@@ -131,6 +143,12 @@ public class StatisticsServiceImpl implements StatisticsService {
                                 .filter(agent -> agent.getMatricule() == agentId)
                                 .collect(Collectors.toList());
                             dto.setAgents(listWithCurrentAgent);
+                            String agentNomStr = listWithCurrentAgent.stream()
+                                .filter(a -> a != null)
+                                .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                                .distinct()
+                                .collect(Collectors.joining(", "));
+                            dto.setAgentNom(agentNomStr);
                         }
                         dtoList.add(dto);
                     }
@@ -158,12 +176,24 @@ public class StatisticsServiceImpl implements StatisticsService {
                         StatistiqueDTO dto = new StatistiqueDTO();
                         dto.setAdresse(adresse);
                         dto.setNomIntervention(nomIntervention);
-                        dto.setNombre(interventionsForName.size());  // Nombre d'interventions pour cette adresse et ce nom
+                        dto.setNombre(interventionsForName.size());
                         dto.setBrigadeNom(!interventionsForName.isEmpty() ? interventionsForName.get(0).getBrigade() : null);
-
                         
                         if (agentId == null) {
-                            dto.setBrigade(brigade);  // Si agentId est null, on met seulement la brigade
+                            dto.setBrigade(brigade);
+                            // Agréger les agents uniques pour cette ligne (recherche par brigade)
+                            List<Agents> agentsGroup = interventionsForName.stream()
+                                .flatMap(intervention -> intervention.getAgents().stream())
+                                .collect(Collectors.toList());
+                            Map<Integer, Agents> uniqueAgentsMap = agentsGroup.stream()
+                                .collect(Collectors.toMap(Agents::getMatricule, a -> a, (a, b) -> a));
+                            List<Agents> uniqueAgents = new ArrayList<>(uniqueAgentsMap.values());
+                            dto.setAgents(uniqueAgents);
+                            String agentNomStr = uniqueAgents.stream()
+                                .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                                .distinct()
+                                .collect(Collectors.joining(", "));
+                            dto.setAgentNom(agentNomStr);
                         } else {
                             // Filtrer les agents par agentId
                             List<Agents> listWithCurrentAgent = interventionsForName.stream()
@@ -171,6 +201,12 @@ public class StatisticsServiceImpl implements StatisticsService {
                                 .filter(agent -> agent.getMatricule() == agentId)
                                 .collect(Collectors.toList());
                             dto.setAgents(listWithCurrentAgent);
+                            String agentNomStr = listWithCurrentAgent.stream()
+                                .filter(a -> a != null)
+                                .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                                .distinct()
+                                .collect(Collectors.joining(", "));
+                            dto.setAgentNom(agentNomStr);
                         }
                         dtoList.add(dto);
                     }
@@ -184,15 +220,28 @@ public class StatisticsServiceImpl implements StatisticsService {
                     StatistiqueDTO dto = new StatistiqueDTO();
                     dto.setNomIntervention(mission.getMissions().getNomMission());
                     dto.setAdresse(mission.getLieuMission());
-                    dto.setNombre(1);  // Chaque mission compte pour 1 dans ce cas
+                    dto.setNombre(1);
                     
                     if (agentId == null) {
-                        dto.setBrigade(brigade);  // Si agentId est null, on met seulement la brigade
+                        dto.setBrigade(brigade);
+                        List<Agents> uniqueAgents = new ArrayList<>(mission.getAgents());
+                        dto.setAgents(uniqueAgents);
+                        String agentNomStr = uniqueAgents.stream()
+                            .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                            .distinct()
+                            .collect(Collectors.joining(", "));
+                        dto.setAgentNom(agentNomStr);
                     } else {
                         List<Agents> listWithCurrentAgent = mission.getAgents().stream().map(agent -> {
                             return agent.getMatricule() == agentId ? agent : null;
                         }).collect(Collectors.toList());
-                        dto.setAgents(listWithCurrentAgent);  // Sinon on met la liste des agents
+                        dto.setAgents(listWithCurrentAgent);
+                        String agentNomStr = listWithCurrentAgent.stream()
+                            .filter(a -> a != null)
+                            .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                            .distinct()
+                            .collect(Collectors.joining(", "));
+                        dto.setAgentNom(agentNomStr);
                     }
                     dtoList.add(dto);
                 }
@@ -204,15 +253,28 @@ public class StatisticsServiceImpl implements StatisticsService {
                     StatistiqueDTO dto = new StatistiqueDTO();
                     dto.setNomIntervention(intervention.getIntervention().getNomInterventions());
                     dto.setAdresse(intervention.getAdresse());
-                    dto.setNombre(1); // Chaque intervention compte pour 1 dans ce cas
+                    dto.setNombre(1);
                     
                     if (agentId == null) {
-                        dto.setBrigade(brigade);  // Si agentId est null, on met seulement la brigade
+                        dto.setBrigade(brigade);
+                        List<Agents> uniqueAgents = new ArrayList<>(intervention.getAgents());
+                        dto.setAgents(uniqueAgents);
+                        String agentNomStr = uniqueAgents.stream()
+                            .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                            .distinct()
+                            .collect(Collectors.joining(", "));
+                        dto.setAgentNom(agentNomStr);
                     } else {
                         List<Agents> listWithCurrentAgent = intervention.getAgents().stream().map(agent -> {
                             return agent.getMatricule() == agentId ? agent : null;
                         }).collect(Collectors.toList());
-                        dto.setAgents(listWithCurrentAgent);  // Sinon on met la liste des agents
+                        dto.setAgents(listWithCurrentAgent);
+                        String agentNomStr = listWithCurrentAgent.stream()
+                            .filter(a -> a != null)
+                            .map(a -> a.getNomAgent() + " " + a.getPrenomAgent())
+                            .distinct()
+                            .collect(Collectors.joining(", "));
+                        dto.setAgentNom(agentNomStr);
                     }
                     dtoList.add(dto);
                 }

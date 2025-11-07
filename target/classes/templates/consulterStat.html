@@ -1114,8 +1114,9 @@
             
             data.forEach(item => {
                 const brigadeName = item.brigadeNom || item.brigade || ((item.agents && item.agents[0] && item.agents[0].brigade) ? item.agents[0].brigade : null) || 'N/A';
-                const agentName = (item.agents && item.agents[0]) ? (item.agents[0].nomAgent + " " + item.agents[0].prenomAgent) : 'N/A';
-                const entityName = typeRecherche === 'agent' ? agentName : brigadeName;
+                const agentNameSingle = (item.agents && item.agents[0]) ? (item.agents[0].nomAgent + " " + item.agents[0].prenomAgent) : null;
+                const agentsList = item.agentNom || (item.agents && item.agents.length ? item.agents.map(a => a.nomAgent + " " + a.prenomAgent).join(", ") : null);
+                const entityName = typeRecherche === 'brigade' ? (agentsList || 'N/A') : (typeRecherche === 'agent' ? (agentNameSingle || 'N/A') : brigadeName);
                 const interventionName = item.nomIntervention;
                 const row = `<tr class="text-center">
                     <td class="p-2">${entityName || 'N/A'}</td>
@@ -1125,7 +1126,7 @@
                 </tr>`;
                 tableBody.innerHTML += row;
             });
-        }
+    }
     </script>
     <footer  style="position: fixed; bottom: 10px; left: 10px; color: white; font-size: 0.8em; ">
         Réalisation C/S BOUZEBOUDJA Mansour ® 2025™
